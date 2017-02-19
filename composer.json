@@ -1,0 +1,21 @@
+{
+  "name": "library/common",
+  "description": "公共类库",
+  "keywords": ["common","mail","log","laravel5"],
+  "authors": [
+    {
+      "name": "baojie.shao",
+      "email": "baojie.shao@wenba100.com"
+    }
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=5.4.0",
+    "monolog/monolog": "~1.11"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
