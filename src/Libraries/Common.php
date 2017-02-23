@@ -54,18 +54,13 @@ class Common
      */
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
-        if (!config('mail.mail_sys_log')) return true;
-        Mail::queueOn('warningEmail', 'emails.warning',
-            [
-                'messages'   => $e->getMessage(),
-                'requestUrl' => $requestUrl,
-                'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
-                'trace'      => str_replace("\n", "<br/>", $e->getTraceAsString())
-            ],
-            function ($m) use ($title) {
-                $m->to(config('mail.send_to_001.address'), config('mail.send_to_001.name'))
-                    ->subject($title);
-            });
+        $this->request(config('common_config.warning_email_url'), [
+            'messages'   => $e->getMessage(),
+            'requestUrl' => $requestUrl,
+            'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'trace'      => str_replace("\n", "<br/>", $e->getTraceAsString()),
+            'title'      => $title
+        ]);
     }
 
     /**
@@ -76,18 +71,13 @@ class Common
      */
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
-        if (!config('mail.mail_sys_log')) return true;
-        Mail::queueOn('warningEmail', 'emails.warning',
-            [
-                'messages'   => $message,
-                'requestUrl' => $requestUrl,
-                'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
-                'trace'      => ''
-            ],
-            function ($m) use ($title) {
-                $m->to(config('mail.send_to_001.address'), config('mail.send_to_001.name'))
-                    ->subject($title);
-            });
+        $this->request(config('common_config.warning_email_url'), [
+            'messages'   => $message,
+            'requestUrl' => $requestUrl,
+            'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'trace'      => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'title'      => $title
+        ]);
     }
 
 

@@ -15,6 +15,7 @@ class CommonProvider extends ServiceProvider
     public function boot()
     {
         //
+        $this->publishes();
     }
 
     /**
