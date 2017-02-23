@@ -15,7 +15,7 @@ class CommonProvider extends ServiceProvider
     public function boot()
     {
         //
-        $this->publishes(__DIR__.'/../common_config.php', config_path('common_conf.php'));
+        $this->publishes([__DIR__ . '/../common_config.php' => config_path('common_conf.php')]);
     }
 
     /**
