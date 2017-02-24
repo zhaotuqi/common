@@ -167,6 +167,7 @@ class Common
         return $result;
     }
 
+
     /**
      * request POST FORM DATA
      * @param $requestUrl
@@ -205,6 +206,61 @@ class Common
         );
 
         return $result;
+    }
+
+    public function postRequest($requestUrl, $param)
+    {
+        $httpClient = app('HttpClient');
+        try {
+            $i = 0;
+            postRequest:
+            $result = $httpClient->request('POST', $requestUrl, ['body' => $param, 'verify' => false, 'headers' => ['Content-Type' => 'application/x-www-form-urlencoded']])->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            if ($i < 5) {
+                $i++;
+                goto postRequest;
+            } else {
+                throw $e;
+            }
+        }
+
+        $message = [
+            'request_uri'    => $requestUrl,
+            'request_header' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'request_body'   => $param,
+            'response_body'  => @json_decode($result, true) ?: $result
+        ];
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog.log',
+            json_encode($message, JSON_UNESCAPED_UNICODE),
+            Logger::INFO
+        );
+
+        return $result;
+    }
+
+    /**
+     * 并发请求
+     * @param  [type] $arrRequestUrl [description]
+     * @return [type] $arrReponseData               [description]
+     */
+    public function requestAsync($arrRequestData) {
+        $objHttpClient = app('HttpClient');
+        foreach ($arrRequestData as $url => $data) {
+            $tmp = [
+                'form_params' => $data,
+            ];
+            $postData[$url] = $objHttpClient->postAsync($url, $tmp);
+        }
+        $arrResult = Promise\unwrap($postData);
+        foreach ($arrResult as $key => $value) {
+            $arrData              = json_decode($value->getBody()->getContents(), true);
+            $arrReponseData[$key] = $arrData;
+        }
+        return $arrReponseData;
     }
 
     /**
@@ -405,5 +461,15 @@ class Common
 
         $version_num = $version_array[0] * 1000 + $version_array[1] * 100 + $version_array[2] * 10 + $version_array[3];
         return $version_num;
+    }
+
+    public function getClientIp()
+    {
+        $ipAddress = $_SERVER['REMOTE_ADDR'];
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+
+        return $ipAddress;
     }
 }
