@@ -384,6 +384,10 @@ class Common
         return $rand_str;
     }
 
+    /**
+     * @param string $time
+     * @return int
+     */
     public function getSecByTimes($time = '12:00')
     {
         $sec = strtotime($time) - strtotime('00:00');
