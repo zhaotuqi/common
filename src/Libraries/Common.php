@@ -54,13 +54,16 @@ class Common
      */
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
-        @$this->request(config('common_config.warning_email_url'), [
+        $param = [
             'messages'   => $e->getMessage(),
             'requestUrl' => $requestUrl,
             'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
             'trace'      => str_replace("\n", "<br/>", $e->getTraceAsString()),
             'title'      => $title
-        ]);
+        ];
+        $httpClient = app('HttpClient');
+        @$httpClient->request('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 2, 'connect_timeout' => 2])->getBody()->getContents();
+
     }
 
     /**
@@ -71,13 +74,15 @@ class Common
      */
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
-        @$this->request(config('common_config.warning_email_url'), [
+        $param = [
             'messages'   => $message,
             'requestUrl' => $requestUrl,
             'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
             'trace'      => json_encode($param, JSON_UNESCAPED_UNICODE),
             'title'      => $title
-        ]);
+        ];
+        $httpClient = app('HttpClient');
+        @$httpClient->request('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 2, 'connect_timeout' => 2])->getBody()->getContents();
     }
 
 
