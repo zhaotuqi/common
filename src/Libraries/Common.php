@@ -54,7 +54,7 @@ class Common
      */
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
-        $this->request(config('common_config.warning_email_url'), [
+        @$this->request(config('common_config.warning_email_url'), [
             'messages'   => $e->getMessage(),
             'requestUrl' => $requestUrl,
             'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
@@ -71,7 +71,7 @@ class Common
      */
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
-        $this->request(config('common_config.warning_email_url'), [
+        @$this->request(config('common_config.warning_email_url'), [
             'messages'   => $message,
             'requestUrl' => $requestUrl,
             'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
