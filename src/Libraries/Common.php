@@ -398,4 +398,12 @@ class Common
 
         return 0;
     }
+
+    public function getVersionNum($version){
+
+        $version_array = explode('.',$version);
+
+        $version_num = $version_array[0] * 1000 + $version_array[1] * 100 + $version_array[2] * 10 + $version_array[3];
+        return $version_num;
+    }
 }
