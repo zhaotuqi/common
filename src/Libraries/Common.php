@@ -72,6 +72,108 @@ class Common
         }
     }
 
+    public function getXuebaTokenByUid($uid, $phone)
+    {
+        $key = config('global.XBJ_USER_TOKEN_KEY');
+        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
+        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+        mcrypt_generic_init($td, $key, $iv);
+        $data = mcrypt_generic($td, $uid . '_' . $phone);
+        mcrypt_generic_deinit($td);
+        mcrypt_module_close($td);
+        $token = base64_encode($data);
+        $token = base64_encode($token);
+        $token = str_replace('+', '-', $token);
+        $token = str_replace('/', '_', $token);
+        $len = strlen($token) - 1;
+        $numEqual = 0;
+        for ($i = $len; $i >= 0; $i--) {
+            if (substr($token, $i, 1) == '=') {
+                $numEqual = $numEqual + 1;
+            } else {
+                break;
+            }
+        }
+        if ($numEqual > 0) {
+            $token = substr($token, 0, $len - $numEqual + 1);
+        }
+        $token .= $numEqual;
+
+        return $token;
+    }
+
+    public function encryptContent($content, $key = null)
+    {
+        $key = $key ?: "235e2a084899bf7f58f432b5037a5bb9";
+        $token = self::encrypt($content, $key);
+        $token = base64_encode($token);
+        $token = str_replace('+', '-', $token);
+        $token = str_replace('/', '_', $token);
+        $len = strlen($token) - 1;
+        $numEqual = 0;
+        for($i = $len; $i >= 0; $i--){
+            if(substr($token, $i, 1) == '='){
+                $numEqual = $numEqual + 1;
+            }else{
+                break;
+            }
+        }
+        if($numEqual > 0){
+            $token = substr($token, 0, $len - $numEqual + 1);
+        }
+        $token .= $numEqual;
+        return $token;
+    }
+
+    public static function encrypt($input, $key) {
+        $size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
+        //$input = self::pkcs5_pad($input, $size);
+        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
+        $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+        mcrypt_generic_init($td, $key, $iv);
+        $data = mcrypt_generic($td, $input);
+        mcrypt_generic_deinit($td);
+        mcrypt_module_close($td);
+        $data = base64_encode($data);
+        return $data;
+    }
+
+    public function decryptToken($token, $key = null)
+    {
+        $globConfig = config('global');
+        $key = $globConfig['XBJ_USER_TOKEN_KEY'];
+        if (!empty($token)) {
+            $token = str_replace('-', '+', $token);
+            $token = str_replace('_', '/', $token);
+            $len = strlen($token);
+            $numEqual = substr($token, $len - 1, 1);
+            if ($numEqual === '0') {
+                $token = substr($token, 0, $len - 1);
+            } else {
+                $token = substr($token, 0, $len - 1);
+                $token .= str_pad('', 0 + $numEqual, '=');
+            }
+            $token = base64_decode($token);
+            $ret = $this->decrypt($token, $key);
+
+            return $ret;
+        }
+
+        return false;
+    }
+
+    public function decrypt($sStr, $sKey)
+    {
+        $decrypted = mcrypt_decrypt(
+            MCRYPT_RIJNDAEL_128,
+            $sKey,
+            base64_decode($sStr),
+            MCRYPT_MODE_ECB
+        );
+
+        return $decrypted;
+    }
+
     /**
      * 发送异常邮件
      * @param $title
@@ -261,6 +363,48 @@ class Common
             $arrReponseData[$key] = $arrData;
         }
         return $arrReponseData;
+    }
+
+    /**
+     * request GET Query String
+     * @param $requestUrl
+     * @param $param
+     * @return mixed
+     */
+    public function queryCatchException($requestUrl, $param, $headers = [])
+    {
+        $httpClient = app('HttpClient');
+
+        try {
+            $i = 0;
+            query:
+            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 15, 'connect_timeout' => 15])->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            if ($i < 2) {
+                $i++;
+                //file_put_contents('/tmp/query.log', $i . '__' . $requestUrl . PHP_EOL, FILE_APPEND);
+                goto query;
+            } else {
+                return false;
+            }
+        }
+
+        $message = [
+            'request_uri'    => $requestUrl,
+            'request_header' => $headers,
+            'request_body'   => $param,
+            'response_body'  => @json_decode($result, true) ?: $result
+        ];
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog_' . date('YmdH') . '.log',
+            json_encode($message, JSON_UNESCAPED_UNICODE),
+            Logger::INFO
+        );
+
+        return $result;
     }
 
     /**
