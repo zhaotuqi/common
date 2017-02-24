@@ -19,9 +19,9 @@ class CommonProvider extends ServiceProvider
         $content = file_get_contents(base_path('.env'));
         if (false == strrpos($content, 'WARNING_EMAIL_URL')) {
             if (App()->environment() == 'production') {
-                file_put_contents(base_path('.env'), 'WARNING_EMAIL_URL=http://10.10.146.223/mail/sendWarning', FILE_APPEND);
+                file_put_contents(base_path('.env'), PHP_EOL . 'WARNING_EMAIL_URL=http://10.10.146.223/mail/sendWarning' . PHP_EOL, FILE_APPEND);
             } else {
-                file_put_contents(base_path('.env'), 'WARNING_EMAIL_URL=http://10.1.1.100:8299/mail/sendWarning', FILE_APPEND);
+                file_put_contents(base_path('.env'), PHP_EOL . 'WARNING_EMAIL_URL=http://10.1.1.100:8299/mail/sendWarning' . PHP_EOL, FILE_APPEND);
             }
         }
     }
