@@ -8,6 +8,7 @@
 
 namespace App\Libraries;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Monolog\Logger;
 use Exception;
@@ -61,9 +62,14 @@ class Common
             'trace'      => str_replace("\n", "<br/>", $e->getTraceAsString()),
             'title'      => $title
         ];
-        $httpClient = app('HttpClient');
-        @$httpClient->request('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 2, 'connect_timeout' => 2])->getBody()->getContents();
 
+        $client = app('HttpClient');
+        try {
+            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 1, 'connect_timeout' => 1]);
+            $promise->wait();
+        } catch (Exception $e) {
+            Log::info('写日志超时');
+        }
     }
 
     /**
@@ -81,8 +87,14 @@ class Common
             'trace'      => json_encode($param, JSON_UNESCAPED_UNICODE),
             'title'      => $title
         ];
-        $httpClient = app('HttpClient');
-        @$httpClient->request('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 2, 'connect_timeout' => 2])->getBody()->getContents();
+
+        $client = app('HttpClient');
+        try {
+            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 1, 'connect_timeout' => 1]);
+            $promise->wait();
+        } catch (Exception $e) {
+            Log::info('写日志超时');
+        }
     }
 
 
