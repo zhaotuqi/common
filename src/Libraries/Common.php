@@ -315,6 +315,15 @@ class Common
         return $prefix . date('YmdHis') . substr(base_convert(uniqid(), 16, 10), -4) . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
     }
 
+    public function daysBetweenDates($date1, $date2)
+    {
+        $date1 = strtotime($date1);
+        $date2 = strtotime($date2);
+        $days = ceil(abs($date1 - $date2) / 86400);
+
+        return $days;
+    }
+
     //显示数据
     public function getClockByTimestamp($time)
     {
@@ -360,5 +369,18 @@ class Common
                 });
             }
         })->export('xls');
+    }
+
+    //获取随机数
+    public function strRand($length = 10, $char = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    {
+        if (!is_int($length) || $length < 0) return false;
+        $rand_str = '';
+        $char_len = strlen($char);
+        for ($i = $length; $i > 0; $i--) {
+            $rand_str .= $char[mt_rand(0, $char_len - 1)];
+        }
+
+        return $rand_str;
     }
 }
