@@ -16,7 +16,8 @@ class CommonProvider extends ServiceProvider
     {
         //
         $this->publishes([__DIR__ . '/../common_config.php' => config_path('common_config.php')]);
-        if (!config('common_config.WARNING_EMAIL_URL') && config('common_config')) {
+        $content = file_get_contents(base_path('.env'));
+        if (false == strrpos($content, 'WARNING_EMAIL_URL')) {
             if (App()->environment() == 'production') {
                 file_put_contents(base_path('.env'), 'WARNING_EMAIL_URL=http://10.10.146.223/mail/sendWarning', FILE_APPEND);
             } else {
