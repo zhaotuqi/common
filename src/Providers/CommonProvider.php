@@ -16,7 +16,10 @@ class CommonProvider extends ServiceProvider
     {
         //
         $this->publishes([__DIR__ . '/../common_config.php' => config_path('common_config.php')]);
-        file_put_contents(base_path('.env'), 'test');
+        $content = file_get_contents(base_path('.env'));
+        if (false === strrpos($content, 'WARNING_EMAIL_URL')) {
+            dd('不存在');
+        }
     }
 
     /**
