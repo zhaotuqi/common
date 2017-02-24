@@ -383,4 +383,15 @@ class Common
 
         return $rand_str;
     }
+
+    public function getSecByTimes($time = '12:00')
+    {
+        $sec = strtotime($time) - strtotime('00:00');
+
+        if ($sec > 0 && $sec < 86400) {
+            return $sec;
+        }
+
+        return 0;
+    }
 }
