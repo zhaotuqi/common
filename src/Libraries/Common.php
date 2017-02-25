@@ -68,7 +68,7 @@ class Common
             $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 1, 'connect_timeout' => 1]);
             $promise->wait();
         } catch (Exception $e) {
-            Log::info('写日志超时');
+            Log::info('写日志超时' . $e->getMessage());
         }
     }
 
@@ -111,30 +111,33 @@ class Common
         $token = str_replace('/', '_', $token);
         $len = strlen($token) - 1;
         $numEqual = 0;
-        for($i = $len; $i >= 0; $i--){
-            if(substr($token, $i, 1) == '='){
+        for ($i = $len; $i >= 0; $i--) {
+            if (substr($token, $i, 1) == '=') {
                 $numEqual = $numEqual + 1;
-            }else{
+            } else {
                 break;
             }
         }
-        if($numEqual > 0){
+        if ($numEqual > 0) {
             $token = substr($token, 0, $len - $numEqual + 1);
         }
         $token .= $numEqual;
+
         return $token;
     }
 
-    public static function encrypt($input, $key) {
+    public static function encrypt($input, $key)
+    {
         $size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
         //$input = self::pkcs5_pad($input, $size);
         $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
-        $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
         mcrypt_generic_init($td, $key, $iv);
         $data = mcrypt_generic($td, $input);
         mcrypt_generic_deinit($td);
         mcrypt_module_close($td);
         $data = base64_encode($data);
+
         return $data;
     }
 
@@ -195,7 +198,7 @@ class Common
             $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 1, 'connect_timeout' => 1]);
             $promise->wait();
         } catch (Exception $e) {
-            Log::info('写日志超时');
+            Log::info('写日志超时' . $e->getMessage());
         }
     }
 
@@ -349,7 +352,8 @@ class Common
      * @param  [type] $arrRequestUrl [description]
      * @return [type] $arrReponseData               [description]
      */
-    public function requestAsync($arrRequestData) {
+    public function requestAsync($arrRequestData)
+    {
         $objHttpClient = app('HttpClient');
         foreach ($arrRequestData as $url => $data) {
             $tmp = [
@@ -359,9 +363,10 @@ class Common
         }
         $arrResult = Promise\unwrap($postData);
         foreach ($arrResult as $key => $value) {
-            $arrData              = json_decode($value->getBody()->getContents(), true);
+            $arrData = json_decode($value->getBody()->getContents(), true);
             $arrReponseData[$key] = $arrData;
         }
+
         return $arrReponseData;
     }
 
@@ -599,11 +604,13 @@ class Common
         return 0;
     }
 
-    public function getVersionNum($version){
+    public function getVersionNum($version)
+    {
 
-        $version_array = explode('.',$version);
+        $version_array = explode('.', $version);
 
         $version_num = $version_array[0] * 1000 + $version_array[1] * 100 + $version_array[2] * 10 + $version_array[3];
+
         return $version_num;
     }
 
