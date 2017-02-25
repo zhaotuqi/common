@@ -56,11 +56,11 @@ class Common
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
         $param = [
-            'messages'   => $e->getMessage(),
-            'requestUrl' => $requestUrl,
-            'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'trace'      => str_replace("\n", "<br/>", $e->getTraceAsString()),
-            'title'      => $title
+            'messages'    => $e->getMessage(),
+            'request_url' => $requestUrl,
+            'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'trace'       => str_replace("\n", "<br/>", $e->getTraceAsString()),
+            'title'       => $title
         ];
 
         $client = app('HttpClient');
@@ -186,11 +186,11 @@ class Common
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
         $param = [
-            'messages'   => $message,
-            'requestUrl' => $requestUrl,
-            'param'      => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'trace'      => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'title'      => $title
+            'messages'    => $message,
+            'request_url' => $requestUrl,
+            'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'trace'       => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'title'       => $title
         ];
 
         $client = app('HttpClient');
