@@ -18,5 +18,8 @@
     "psr-4": {
       "App\\": "src/"
     }
+  },
+  "suggest":{
+    "maatwebsite/excel":"如果使用导出excel必须使用此依赖"
   }
 }

@@ -560,7 +560,7 @@ class Common
      */
     public function ouputAsExcel($arrCellName, $arrListData, $strFileNamePre)
     {
-        Excel::create($strFileNamePre . time(), function ($excel) use ($arrListData, $arrCellName, $strFileNamePre) {
+        \Maatwebsite\Excel\Facades\Excel::create($strFileNamePre . time(), function ($excel) use ($arrListData, $arrCellName, $strFileNamePre) {
             $intSheetNum = ceil(count($arrListData) / self::EACH_PAGE_NUM);
             for ($index = 0; $index < $intSheetNum; $index++) {
                 $arrCellDataTmp = $arrCellName;
