@@ -361,7 +361,7 @@ class Common
             ];
             $postData[$url] = $objHttpClient->postAsync($url, $tmp);
         }
-        $arrResult = Promise\unwrap($postData);
+        $arrResult = \GuzzleHttp\Promise\unwrap($postData);
         foreach ($arrResult as $key => $value) {
             $arrData = json_decode($value->getBody()->getContents(), true);
             $arrReponseData[$key] = $arrData;
