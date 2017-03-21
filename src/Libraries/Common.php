@@ -233,13 +233,21 @@ class Common
 	 *填充默认的header信息
  	 *
 	 **/
-	private function defaultHeader($header) 
-	{
-		parse_str($_SERVER['QUERY_STRING'], $arrQuery);
-		$header['logid'] = isset($_SERVER['HTTP_LOGID']) ? $_SERVER['HTTP_LOGID'] : (isset($arrQuery['logid']) ? $arrQuery['logid'] : microtime() . rand(1, 1000));
-		$header['trace'] = isset($_SERVER['HTTP_TRACE']) ? intval($_SERVER['HTTP_TRACE']) + 1 : (isset($arrQuery['trace']) ? intval($arrQuery['trace']) + 1 : 0);
-		return $header;
-	}
+    private function defaultHeader($header)
+    {
+        if (app()->runningInConsole()) {
+            return [
+                'logid' => uniqid() . rand(1, 1000),
+                'trace' => 0
+            ];
+        } else {
+            parse_str($_SERVER['QUERY_STRING'], $arrQuery);
+            $header['logid'] = isset($_SERVER['HTTP_LOGID']) ? $_SERVER['HTTP_LOGID'] : (isset($arrQuery['logid']) ? $arrQuery['logid'] : uniqid() . rand(1, 1000));
+            $header['trace'] = isset($_SERVER['HTTP_TRACE']) ? intval($_SERVER['HTTP_TRACE']) + 1 : (isset($arrQuery['trace']) ? intval($arrQuery['trace']) + 1 : 0);
+
+            return $header;
+        }
+    }
     /**
      * request GET Query String
      * @param $requestUrl
