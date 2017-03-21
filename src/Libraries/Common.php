@@ -248,7 +248,7 @@ class Common
      */
     public function query($requestUrl, $param, $headers = [])
     {
-		$header = $this->defaultHeader($headers);
+		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -292,7 +292,7 @@ class Common
      */
     public function request($requestUrl, $param, $headers = [])
     {
-		$header = $this->defaultHeader($headers);
+		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
@@ -327,12 +327,13 @@ class Common
 
     public function postRequest($requestUrl, $param)
     {
-		$header = $this->defaultHeader($headers);
+		$headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
+		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
             postRequest:
-            $result = $httpClient->request('POST', $requestUrl, ['body' => $param, 'verify' => false, 'headers' => ['Content-Type' => 'application/x-www-form-urlencoded']])->getBody()->getContents();
+            $result = $httpClient->request('POST', $requestUrl, ['body' => $param, 'verify' => false, 'headers' => $headers])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -344,7 +345,7 @@ class Common
 
         $message = [
             'request_uri'    => $requestUrl,
-            'request_header' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'request_header' => $headers,
             'request_body'   => $param,
             'response_body'  => @json_decode($result, true) ?: $result
         ];
@@ -371,7 +372,7 @@ class Common
         foreach ($arrRequestData as $url => $data) {
             $tmp = [
                 'form_params' => $data,
-				'header'	=>	$this->defaultHeader([]), 
+				'headers'	=>	$this->defaultHeader([]), 
             ];
             $postData[$url] = $objHttpClient->postAsync($url, $tmp);
         }
@@ -392,7 +393,7 @@ class Common
      */
     public function queryCatchException($requestUrl, $param, $headers = [])
     {
-		$header = $this->defaultHeader($headers);
+		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -435,7 +436,7 @@ class Common
      */
     public function requestMultipart($requestUrl, $multipart, $headers = [])
     {
-		$header = $this->defaultHeader($headers);
+		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -484,7 +485,7 @@ class Common
      */
     public function requestJson($requestUrl, $param, $headers = [])
     {
-		$header = $this->defaultHeader($headers);
+		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
