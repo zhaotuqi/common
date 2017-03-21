@@ -229,7 +229,17 @@ class Common
     {
         return preg_match('/^1[3|4|5|7|8]\d{9}$/', $phoneNo) ? true : false;
     }
-
+	/**
+	 *填充默认的header信息
+ 	 *
+	 **/
+	private function defaultHeader($header) 
+	{
+		parse_str($_SERVER['QUERY_STRING'], $arrQuery);
+		$header['logid'] = isset($_SERVER['HTTP_LOGID']) ? $_SERVER['HTTP_LOGID'] : (isset($arrQuery['logid']) ? $arrQuery['logid'] : microtime() . rand(1, 1000));
+		$header['trace'] = isset($_SERVER['HTTP_TRACE']) ? intval($_SERVER['HTTP_TRACE']) + 1 : (isset($arrQuery['trace']) ? intval($arrQuery['trace']) + 1 : 0);
+		return $header;
+	}
     /**
      * request GET Query String
      * @param $requestUrl
@@ -238,6 +248,7 @@ class Common
      */
     public function query($requestUrl, $param, $headers = [])
     {
+		$header = $this->defauleHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -281,6 +292,7 @@ class Common
      */
     public function request($requestUrl, $param, $headers = [])
     {
+		$header = $this->defauleHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
@@ -315,6 +327,7 @@ class Common
 
     public function postRequest($requestUrl, $param)
     {
+		$header = $this->defauleHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
@@ -358,6 +371,7 @@ class Common
         foreach ($arrRequestData as $url => $data) {
             $tmp = [
                 'form_params' => $data,
+				'header'	=>	$this->defaultHeader([]), 
             ];
             $postData[$url] = $objHttpClient->postAsync($url, $tmp);
         }
@@ -378,6 +392,7 @@ class Common
      */
     public function queryCatchException($requestUrl, $param, $headers = [])
     {
+		$header = $this->defauleHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -420,6 +435,7 @@ class Common
      */
     public function requestMultipart($requestUrl, $multipart, $headers = [])
     {
+		$header = $this->defauleHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -468,6 +484,7 @@ class Common
      */
     public function requestJson($requestUrl, $param, $headers = [])
     {
+		$header = $this->defauleHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
