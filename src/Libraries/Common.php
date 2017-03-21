@@ -248,7 +248,7 @@ class Common
      */
     public function query($requestUrl, $param, $headers = [])
     {
-		$header = $this->defauleHeader($headers);
+		$header = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -292,7 +292,7 @@ class Common
      */
     public function request($requestUrl, $param, $headers = [])
     {
-		$header = $this->defauleHeader($headers);
+		$header = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
@@ -327,7 +327,7 @@ class Common
 
     public function postRequest($requestUrl, $param)
     {
-		$header = $this->defauleHeader($headers);
+		$header = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
@@ -392,7 +392,7 @@ class Common
      */
     public function queryCatchException($requestUrl, $param, $headers = [])
     {
-		$header = $this->defauleHeader($headers);
+		$header = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -435,7 +435,7 @@ class Common
      */
     public function requestMultipart($requestUrl, $multipart, $headers = [])
     {
-		$header = $this->defauleHeader($headers);
+		$header = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
 
         try {
@@ -484,7 +484,7 @@ class Common
      */
     public function requestJson($requestUrl, $param, $headers = [])
     {
-		$header = $this->defauleHeader($headers);
+		$header = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         try {
             $i = 0;
