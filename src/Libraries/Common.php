@@ -254,7 +254,7 @@ class Common
         try {
             $i = 0;
             query:
-            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3])->getBody()->getContents();
+            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -297,7 +297,7 @@ class Common
         try {
             $i = 0;
             request:
-            $result = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3])->getBody()->getContents();
+            $result = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -447,7 +447,7 @@ class Common
                     'multipart'       => $multipart,
                     'headers'         => $headers,
                     'timeout'         => 3,
-                    'connect_timeout' => 3
+                    'connect_timeout' => 10
                 ])->getBody()->getContents();
 
         } catch (RuntimeException $e) {
@@ -490,7 +490,7 @@ class Common
         try {
             $i = 0;
             requestJson:
-            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3])->getBody()->getContents();
+            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
