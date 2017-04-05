@@ -428,7 +428,7 @@ class Common
         //记录log
         $this->logger(
             config('app.app_name'),
-            'servicelog_' . date('YmdH') . '.log',
+            'servicelog.log',
             json_encode($message, JSON_UNESCAPED_UNICODE),
             Logger::INFO
         );
