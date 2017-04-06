@@ -602,6 +602,29 @@ class Common
         })->export('xls');
     }
 
+    /**
+     * 存储excel
+     * @param  {[type]} $arrCellName    [description]
+     * @param  {[type]} $arrListData    [description]
+     * @param  {[type]} $strFileNamePre [description]
+     * @return {[type]}                 [description]
+     */
+    public function storeAsExcel($arrCellName, $arrListData, $strFileNamePre){
+        \Maatwebsite\Excel\Facades\Excel::create($strFileNamePre . time(), function ($excel) use ($arrListData, $arrCellName, $strFileNamePre) {
+            $intSheetNum = ceil(count($arrListData) / self::EACH_PAGE_NUM);
+            for ($index = 0; $index < $intSheetNum; $index++) {
+                $arrCellDataTmp = $arrCellName;
+                $arrTmpInfo = array_slice($arrListData, $index * self::EACH_PAGE_NUM, self::EACH_PAGE_NUM);
+                foreach ($arrTmpInfo as $singleTmpInfo) {
+                    $arrCellDataTmp[] = $singleTmpInfo;
+                }
+                $strSheetName = sprintf("%s_%d", $strFileNamePre, $index);
+                $excel->sheet($strSheetName, function ($sheet) use ($arrCellDataTmp) {
+                    $sheet->rows($arrCellDataTmp);
+                });
+            }
+        })->store('xls');
+    }
     //获取随机数
     public function strRand($length = 10, $char = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
     {
