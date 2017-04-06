@@ -610,7 +610,7 @@ class Common
      * @return {[type]}                 [description]
      */
     public function storeAsExcel($arrCellName, $arrListData, $strFileNamePre){
-        \Maatwebsite\Excel\Facades\Excel::create($strFileNamePre . time(), function ($excel) use ($arrListData, $arrCellName, $strFileNamePre) {
+        \Maatwebsite\Excel\Facades\Excel::create($strFileNamePre, function ($excel) use ($arrListData, $arrCellName, $strFileNamePre) {
             $intSheetNum = ceil(count($arrListData) / self::EACH_PAGE_NUM);
             for ($index = 0; $index < $intSheetNum; $index++) {
                 $arrCellDataTmp = $arrCellName;
