@@ -236,10 +236,7 @@ class Common
     private function defaultHeader($header)
     {
         if (app()->runningInConsole()) {
-            return [
-                'logid' => uniqid() . rand(1, 1000),
-                'trace' => 0
-            ];
+            return array_merge($header, ['logid' => uniqid() . rand(1, 1000), 'trace' => 0]);
         } else {
             parse_str($_SERVER['QUERY_STRING'], $arrQuery);
             $header['logid'] = isset($_SERVER['HTTP_LOGID']) ? $_SERVER['HTTP_LOGID'] : (isset($arrQuery['logid']) ? $arrQuery['logid'] : uniqid() . rand(1, 1000));
