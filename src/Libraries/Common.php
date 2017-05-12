@@ -65,7 +65,7 @@ class Common
 
         $client = app('HttpClient');
         try {
-            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 1, 'connect_timeout' => 1]);
+            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
             $promise->wait();
         } catch (Exception $e) {
             Log::info('写日志超时' . $e->getMessage());
@@ -195,7 +195,7 @@ class Common
 
         $client = app('HttpClient');
         try {
-            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 1, 'connect_timeout' => 1]);
+            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
             $promise->wait();
         } catch (Exception $e) {
             Log::info('写日志超时' . $e->getMessage());
@@ -259,7 +259,7 @@ class Common
         try {
             $i = 0;
             query:
-            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10])->getBody()->getContents();
+            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -302,7 +302,7 @@ class Common
         try {
             $i = 0;
             request:
-            $result = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10])->getBody()->getContents();
+            $result = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -404,7 +404,7 @@ class Common
         try {
             $i = 0;
             query:
-            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 15, 'connect_timeout' => 15])->getBody()->getContents();
+            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 2) {
                 $i++;
@@ -451,7 +451,7 @@ class Common
                 [
                     'multipart'       => $multipart,
                     'headers'         => $headers,
-                    'timeout'         => 3,
+                    'timeout'         => 30,
                     'connect_timeout' => 10
                 ])->getBody()->getContents();
 
@@ -495,7 +495,7 @@ class Common
         try {
             $i = 0;
             requestJson:
-            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10])->getBody()->getContents();
+            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
