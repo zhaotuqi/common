@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Monolog\Logger;
 use Exception;
 use RuntimeException;
+use Request;
 
 class Common
 {
@@ -662,11 +663,9 @@ class Common
 
     public function getClientIp()
     {
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
-            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        }
+        Request::setTrustedProxies(['10.32.0.1/16']);
+        $ip = Request::getClientIp();
 
-        return $ipAddress;
+        return $ip;
     }
 }
