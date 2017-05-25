@@ -206,9 +206,15 @@ class Common
 
     public function logger($name, $path, $message, $level)
     {
+        if (isset($message['request_uri']) && $this->blackList($message['request_uri'])) {
+            $message['request_body']  = 'This request has been filtered ...';
+            $message['response_body'] = 'This response has been filtered ...';
+        }
+
         $log    = new Logger($name);
         $handle = new \App\Extension\LogRewrite('/data/logs/' . config('app.app_name') . '/' . $path, config('app.log_max_files'));
         $log->pushHandler($handle);
+        $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         $log->log($level, $message);
     }
 
@@ -285,7 +291,7 @@ class Common
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -329,7 +335,7 @@ class Common
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -367,7 +373,7 @@ class Common
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -435,7 +441,7 @@ class Common
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -485,7 +491,7 @@ class Common
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -528,7 +534,7 @@ class Common
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -706,5 +712,24 @@ class Common
 
             return $item;
         })->toArray();
+    }
+
+    /**
+     * 判断是否在路由黑名单
+     * @param $pathInfo
+     * @return bool
+     */
+    public function blackList($pathInfo)
+    {
+        $pathData     = parse_url($pathInfo);
+        $blacklistUrl = [
+            '/homework/homeworkData'
+        ];
+
+        if (in_array($pathData['path'], $blacklistUrl)) {
+            return true;
+        }
+
+        return false;
     }
 }
