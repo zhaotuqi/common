@@ -452,7 +452,7 @@ class Common
     {
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
-
+        $startTime  = microtime(true);
         try {
             $i = 0;
             request:
@@ -474,10 +474,11 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
             'request_body'   => $multipart,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'response_body'  => json_decode($result, true) ?: $result
         ];
 
         //记录log
@@ -682,17 +683,19 @@ class Common
     }
 
     /**
-     * 日志精简
-     * @param string $logBody
+     * 日志精简 支持数组or字符串
+     * @param $logBody
      */
     public function logReduce($logBody)
     {
-        $body = json_decode($logBody, true);
-        if (!is_array($body)) {
-            return $logBody;
+        if (!is_array($logBody)) {
+            $logBody = json_decode($logBody, true);
+            if (!is_array($logBody)) {
+                return $logBody;
+            }
         }
 
-        return collect($body)->transform(function ($item, $key) {
+        return collect($logBody)->transform(function ($item, $key) {
             if ($key == 'cpList') {
                 $item = 'Has been filtered ...';
             }
