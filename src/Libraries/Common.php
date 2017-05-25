@@ -206,15 +206,17 @@ class Common
 
     public function logger($name, $path, $message, $level)
     {
-        if (isset($message['request_uri']) && $this->blackList($message['request_uri'])) {
-            $message['request_body']  = 'This request has been filtered ...';
-            $message['response_body'] = 'This response has been filtered ...';
+        if (is_array($message)) {
+            if (isset($message['request_uri']) && $this->blackList($message['request_uri'])) {
+                $message['request_body']  = 'This request has been filtered ...';
+                $message['response_body'] = 'This response has been filtered ...';
+            }
+            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
         $log    = new Logger($name);
         $handle = new \App\Extension\LogRewrite('/data/logs/' . config('app.app_name') . '/' . $path, config('app.log_max_files'));
         $log->pushHandler($handle);
-        $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         $log->log($level, $message);
     }
 
