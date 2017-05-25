@@ -723,7 +723,8 @@ class Common
     {
         $pathData     = parse_url($pathInfo);
         $blacklistUrl = [
-            '/homework/homeworkData'
+            '/homework/homeworkData',
+            '/android/student/getCourseFile'
         ];
 
         if (in_array($pathData['path'], $blacklistUrl)) {
