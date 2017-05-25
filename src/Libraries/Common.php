@@ -727,6 +727,7 @@ class Common
             '/android/student/getCourseFile',
             '/ios/student/getCourseFile',
             '/studentPc/getCourseFile',
+            '/manageCourse/getOverCourseList'
         ];
 
         if (in_array($pathData['path'], $blacklistUrl)) {
