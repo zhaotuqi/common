@@ -732,10 +732,6 @@ class Common
             '/manageCourse/getOverCourseList',
             '/courseware/getQ',
             '/courseware/getTree',
-            '/courseware/save',
-            '/courseware/update',
-            '/courseware/getContent',
-            '/courseware/create',
         ];
 
         if (in_array($pathData['path'], $blacklistUrl)) {
