@@ -684,10 +684,12 @@ class Common
 
     public function getClientIp()
     {
-        Request::setTrustedProxies(['10.32.0.1/16']);
-        $ip = Request::getClientIp();
+        $ipAddress = $_SERVER['REMOTE_ADDR'];
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
 
-        return $ip;
+        return $ipAddress;
     }
 
     /**
