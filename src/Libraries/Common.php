@@ -488,7 +488,7 @@ class Common
      * @param $param
      * @return mixed
      */
-    public function requestJson($arrRequestUrl, $param, $headers = [])
+    public function requestJsonCluster($arrRequestUrl, $param, $headers = [])
     {
 		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
@@ -499,7 +499,7 @@ class Common
 				$requestUrl = $arrRequestUrl['slave'];
 			}
 			else {
-				$reqeustUrl = $arrRequestUrl['master'];
+				$requestUrl = $arrRequestUrl['master'];
 			}
             $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3])->getBody()->getContents();
         } catch (RuntimeException $e) {
