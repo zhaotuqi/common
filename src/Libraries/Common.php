@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Monolog\Logger;
 use Exception;
 use RuntimeException;
+use Request;
 
 class Common
 {
@@ -75,17 +76,17 @@ class Common
     public function getXuebaTokenByUid($uid, $phone)
     {
         $key = config('global.XBJ_USER_TOKEN_KEY');
-        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
-        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+        $td  = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
+        $iv  = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
         mcrypt_generic_init($td, $key, $iv);
         $data = mcrypt_generic($td, $uid . '_' . $phone);
         mcrypt_generic_deinit($td);
         mcrypt_module_close($td);
-        $token = base64_encode($data);
-        $token = base64_encode($token);
-        $token = str_replace('+', '-', $token);
-        $token = str_replace('/', '_', $token);
-        $len = strlen($token) - 1;
+        $token    = base64_encode($data);
+        $token    = base64_encode($token);
+        $token    = str_replace('+', '-', $token);
+        $token    = str_replace('/', '_', $token);
+        $len      = strlen($token) - 1;
         $numEqual = 0;
         for ($i = $len; $i >= 0; $i--) {
             if (substr($token, $i, 1) == '=') {
@@ -104,12 +105,12 @@ class Common
 
     public function encryptContent($content, $key = null)
     {
-        $key = $key ?: "235e2a084899bf7f58f432b5037a5bb9";
-        $token = self::encrypt($content, $key);
-        $token = base64_encode($token);
-        $token = str_replace('+', '-', $token);
-        $token = str_replace('/', '_', $token);
-        $len = strlen($token) - 1;
+        $key      = $key ?: "235e2a084899bf7f58f432b5037a5bb9";
+        $token    = self::encrypt($content, $key);
+        $token    = base64_encode($token);
+        $token    = str_replace('+', '-', $token);
+        $token    = str_replace('/', '_', $token);
+        $len      = strlen($token) - 1;
         $numEqual = 0;
         for ($i = $len; $i >= 0; $i--) {
             if (substr($token, $i, 1) == '=') {
@@ -144,11 +145,11 @@ class Common
     public function decryptToken($token, $key = null)
     {
         $globConfig = config('global');
-        $key = $globConfig['XBJ_USER_TOKEN_KEY'];
+        $key        = $globConfig['XBJ_USER_TOKEN_KEY'];
         if (!empty($token)) {
-            $token = str_replace('-', '+', $token);
-            $token = str_replace('_', '/', $token);
-            $len = strlen($token);
+            $token    = str_replace('-', '+', $token);
+            $token    = str_replace('_', '/', $token);
+            $len      = strlen($token);
             $numEqual = substr($token, $len - 1, 1);
             if ($numEqual === '0') {
                 $token = substr($token, 0, $len - 1);
@@ -157,7 +158,7 @@ class Common
                 $token .= str_pad('', 0 + $numEqual, '=');
             }
             $token = base64_decode($token);
-            $ret = $this->decrypt($token, $key);
+            $ret   = $this->decrypt($token, $key);
 
             return $ret;
         }
@@ -205,7 +206,15 @@ class Common
 
     public function logger($name, $path, $message, $level)
     {
-        $log = new Logger($name);
+        if (is_array($message)) {
+            if (isset($message['request_uri']) && $this->blackList($message['request_uri'])) {
+                $message['request_body']  = 'This request has been filtered ...';
+                $message['response_body'] = 'This response has been filtered ...';
+            }
+            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+        }
+
+        $log    = new Logger($name);
         $handle = new \App\Extension\LogRewrite('/data/logs/' . config('app.app_name') . '/' . $path, config('app.log_max_files'));
         $log->pushHandler($handle);
         $log->log($level, $message);
@@ -229,10 +238,11 @@ class Common
     {
         return preg_match('/^1[3|4|5|7|8]\d{9}$/', $phoneNo) ? true : false;
     }
-	/**
-	 *填充默认的header信息
- 	 *
-	 **/
+
+    /**
+     *填充默认的header信息
+     *
+     **/
     private function defaultHeader($header)
     {
         if (app()->runningInConsole()) {
@@ -245,6 +255,7 @@ class Common
             return $header;
         }
     }
+
     /**
      * request GET Query String
      * @param $requestUrl
@@ -253,9 +264,9 @@ class Common
      */
     public function query($requestUrl, $param, $headers = [])
     {
-		$headers = $this->defaultHeader($headers);
+        $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
-
+        $startTime  = microtime(true);
         try {
             $i = 0;
             query:
@@ -271,17 +282,18 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
-            'request_body'   => $param,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
         ];
 
         //记录log
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -297,8 +309,9 @@ class Common
      */
     public function request($requestUrl, $param, $headers = [])
     {
-		$headers = $this->defaultHeader($headers);
+        $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
         try {
             $i = 0;
             request:
@@ -313,17 +326,18 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
-            'request_body'   => $param,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
         ];
 
         //记录log
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -332,9 +346,10 @@ class Common
 
     public function postRequest($requestUrl, $param)
     {
-		$headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
-		$headers = $this->defaultHeader($headers);
+        $headers    = ['Content-Type' => 'application/x-www-form-urlencoded'];
+        $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
         try {
             $i = 0;
             postRequest:
@@ -349,17 +364,18 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
-            'request_body'   => $param,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
         ];
 
         //记录log
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -375,15 +391,15 @@ class Common
     {
         $objHttpClient = app('HttpClient');
         foreach ($arrRequestData as $url => $data) {
-            $tmp = [
+            $tmp            = [
                 'form_params' => $data,
-				'headers'	=>	$this->defaultHeader([]), 
+                'headers'     => $this->defaultHeader([]),
             ];
             $postData[$url] = $objHttpClient->postAsync($url, $tmp);
         }
         $arrResult = \GuzzleHttp\Promise\unwrap($postData);
         foreach ($arrResult as $key => $value) {
-            $arrData = json_decode($value->getBody()->getContents(), true);
+            $arrData              = json_decode($value->getBody()->getContents(), true);
             $arrReponseData[$key] = $arrData;
         }
 
@@ -398,9 +414,9 @@ class Common
      */
     public function queryCatchException($requestUrl, $param, $headers = [])
     {
-		$headers = $this->defaultHeader($headers);
+        $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
-
+        $startTime  = microtime(true);
         try {
             $i = 0;
             query:
@@ -416,17 +432,18 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
-            'request_body'   => $param,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
         ];
 
         //记录log
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -441,9 +458,9 @@ class Common
      */
     public function requestMultipart($requestUrl, $multipart, $headers = [])
     {
-		$headers = $this->defaultHeader($headers);
+        $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
-
+        $startTime  = microtime(true);
         try {
             $i = 0;
             request:
@@ -465,17 +482,18 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
             'request_body'   => $multipart,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'response_body'  => json_decode($result, true) ?: $result
         ];
 
         //记录log
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -536,8 +554,9 @@ class Common
      */
     public function requestJson($requestUrl, $param, $headers = [])
     {
-		$headers = $this->defaultHeader($headers);
+        $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
         try {
             $i = 0;
             requestJson:
@@ -552,17 +571,18 @@ class Common
         }
 
         $message = [
+            'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
-            'request_body'   => $param,
-            'response_body'  => @json_decode($result, true) ?: $result
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
         ];
 
         //记录log
         $this->logger(
             config('app.app_name'),
             'servicelog.log',
-            json_encode($message, JSON_UNESCAPED_UNICODE),
+            $message,
             Logger::INFO
         );
 
@@ -577,7 +597,7 @@ class Common
             'pageSize'  => (string)$limit,
             'totalSize' => (string)$totalSize,
         ];
-        $list = [
+        $list  = [
             'list' => $data
         ];
 
@@ -593,7 +613,7 @@ class Common
     {
         $date1 = strtotime($date1);
         $date2 = strtotime($date2);
-        $days = ceil(abs($date1 - $date2) / 86400);
+        $days  = ceil(abs($date1 - $date2) / 86400);
 
         return $days;
     }
@@ -633,7 +653,7 @@ class Common
             $intSheetNum = ceil(count($arrListData) / self::EACH_PAGE_NUM);
             for ($index = 0; $index < $intSheetNum; $index++) {
                 $arrCellDataTmp = $arrCellName;
-                $arrTmpInfo = array_slice($arrListData, $index * self::EACH_PAGE_NUM, self::EACH_PAGE_NUM);
+                $arrTmpInfo     = array_slice($arrListData, $index * self::EACH_PAGE_NUM, self::EACH_PAGE_NUM);
                 foreach ($arrTmpInfo as $singleTmpInfo) {
                     $arrCellDataTmp[] = $singleTmpInfo;
                 }
@@ -652,12 +672,13 @@ class Common
      * @param  {[type]} $strFileNamePre [description]
      * @return {[type]}                 [description]
      */
-    public function storeAsExcel($arrCellName, $arrListData, $strFileNamePre){
+    public function storeAsExcel($arrCellName, $arrListData, $strFileNamePre)
+    {
         \Maatwebsite\Excel\Facades\Excel::create($strFileNamePre, function ($excel) use ($arrListData, $arrCellName, $strFileNamePre) {
             $intSheetNum = ceil(count($arrListData) / self::EACH_PAGE_NUM);
             for ($index = 0; $index < $intSheetNum; $index++) {
                 $arrCellDataTmp = $arrCellName;
-                $arrTmpInfo = array_slice($arrListData, $index * self::EACH_PAGE_NUM, self::EACH_PAGE_NUM);
+                $arrTmpInfo     = array_slice($arrListData, $index * self::EACH_PAGE_NUM, self::EACH_PAGE_NUM);
                 foreach ($arrTmpInfo as $singleTmpInfo) {
                     $arrCellDataTmp[] = $singleTmpInfo;
                 }
@@ -668,6 +689,7 @@ class Common
             }
         })->store('xls');
     }
+
     //获取随机数
     public function strRand($length = 10, $char = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
     {
@@ -708,11 +730,60 @@ class Common
 
     public function getClientIp()
     {
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
-            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        Request::setTrustedProxies(['10.32.0.1/16']);
+        $ip = Request::getClientIp();
+
+        return $ip;
+    }
+
+    /**
+     * 日志精简 支持数组or字符串
+     * @param $logBody
+     */
+    public function logReduce($logBody)
+    {
+        if (!is_array($logBody)) {
+            $logBody = json_decode($logBody, true);
+            if (!is_array($logBody)) {
+                return $logBody;
+            }
         }
 
-        return $ipAddress;
+        return collect($logBody)->transform(function ($item, $key) {
+            if ($key == 'cpList') {
+                $item = 'Has been filtered ...';
+            }
+
+            if (is_array($item) && key_exists('cpList', $item)) {
+                $item['cpList'] = 'Has been filtered ...';
+            }
+
+            return $item;
+        })->toArray();
+    }
+
+    /**
+     * 判断是否在路由黑名单
+     * @param $pathInfo
+     * @return bool
+     */
+    public function blackList($pathInfo)
+    {
+        $pathData     = parse_url($pathInfo);
+        $blacklistUrl = [
+            '/homework/homeworkData',
+            '/android/student/getCourseFile',
+            '/ios/student/getCourseFile',
+            '/studentPc/getCourseFile',
+            '/manageCourse/getOverCourseList',
+            '/courseware/getQ',
+            '/courseware/getTree',
+        ];
+
+        if (in_array($pathData['path'], $blacklistUrl)) {
+            return true;
+        }
+
+        return false;
     }
 }
