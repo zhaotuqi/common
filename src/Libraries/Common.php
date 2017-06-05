@@ -501,6 +501,52 @@ class Common
     }
 
     /**
+     * 发送json raw data 请求集群
+     * @param $arrRequestUrl
+     * @param $param
+     * @return mixed
+     */
+    public function requestJsonCluster($arrRequestUrl, $param, $headers = [])
+    {
+		$headers = $this->defaultHeader($headers);
+        $httpClient = app('HttpClient');
+        try {
+            $i = 0;
+            requestJson:
+			if ($i >= 2) {//请求两次master，第三次开始请求slave
+				$requestUrl = $arrRequestUrl['slave'];
+			}
+			else {
+				$requestUrl = $arrRequestUrl['master'];
+			}
+            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3])->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            if ($i < 5) {
+                $i++;
+                goto requestJson;
+            } else {
+                throw $e;
+            }
+        }
+
+        $message = [
+            'request_uri'    => $requestUrl,
+            'request_header' => $headers,
+            'request_body'   => $param,
+            'response_body'  => @json_decode($result, true) ?: $result
+        ];
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog.log',
+            json_encode($message, JSON_UNESCAPED_UNICODE),
+            Logger::INFO
+        );
+
+        return $result;
+    }
+    /**
      * 发送json raw data 请求
      * @param $requestUrl
      * @param $param
