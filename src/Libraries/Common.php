@@ -481,11 +481,17 @@ class Common
             }
         }
 
+		$arrRequestBody = [];
+		foreach ($multipart as $single) {
+			if('userfile' != trim($single['name'])) {
+				$arrRequestBody[] = $single;
+			}
+		}
         $message = [
             'response_time'  => microtime(true) - $startTime,
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
-            'request_body'   => $multipart,
+            'request_body'   => $arrRequestBody,
             'response_body'  => json_decode($result, true) ?: $result
         ];
 
