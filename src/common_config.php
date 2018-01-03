@@ -6,5 +6,6 @@
  * Time: 23:06
  */
 return [
-    'warning_email_url' => env('WARNING_EMAIL_URL')
+    'warning_email_url' => env('WARNING_EMAIL_URL'),
+    'no_log_routes' => []
 ];

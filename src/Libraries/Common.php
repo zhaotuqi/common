@@ -788,6 +788,9 @@ class Common
             '/courseware/getTree',
         ];
 
+        // 此处增加可动态配置的路由黑名单
+        $blacklistUrl = array_merge($blacklistUrl, config('common_config.no_log_routes'));
+
         if (in_array($pathData['path'], $blacklistUrl)) {
             return true;
         }
