@@ -793,11 +793,7 @@ class Common
         // 此处增加可动态配置的路由黑名单
         config('common_config.no_log_body_routes') && $blacklistUrl = array_merge($blacklistUrl, config('common_config.no_log_body_routes'));
 
-        if (in_array($pathData['path'], $blacklistUrl)) {
-            return true;
-        }
-
-        return false;
+        return in_array($pathData['path'], $blacklistUrl);
     }
 
     /**
@@ -807,6 +803,6 @@ class Common
      */
     private function noLog($pathInfo)
     {
-        return config('common_config.no_log_body_routes') && in_array(parse_url($pathInfo)['path'], config('common_config.no_log_body_routes'));
+        return config('common_config.no_log_routes') && in_array(parse_url($pathInfo)['path'], config('common_config.no_log_routes'));
     }
 }
