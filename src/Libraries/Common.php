@@ -214,10 +214,12 @@ class Common
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
-        $log    = new Logger($name);
-        $handle = new \App\Extension\LogRewrite('/data/logs/' . config('app.app_name') . '/' . $path, config('app.log_max_files'));
-        $log->pushHandler($handle);
-        $log->log($level, $message);
+        if (isset($message['request_uri']) && !$this->noLog($message['request_uri'])) {
+            $log    = new Logger($name);
+            $handle = new \App\Extension\LogRewrite('/data/logs/' . config('app.app_name') . '/' . $path, config('app.log_max_files'));
+            $log->pushHandler($handle);
+            $log->log($level, $message);
+        }
     }
 
     /**
@@ -789,12 +791,22 @@ class Common
         ];
 
         // 此处增加可动态配置的路由黑名单
-        $blacklistUrl = array_merge($blacklistUrl, config('common_config.no_log_routes'));
+        config('common_config.no_log_body_routes') && $blacklistUrl = array_merge($blacklistUrl, config('common_config.no_log_body_routes'));
 
         if (in_array($pathData['path'], $blacklistUrl)) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * 判断是否记录日志
+     * @param $pathInfo
+     * @return bool
+     */
+    private function noLog($pathInfo)
+    {
+        return config('common_config.no_log_body_routes') && in_array(parse_url($pathInfo)['path'], config('common_config.no_log_body_routes'));
     }
 }
