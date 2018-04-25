@@ -246,7 +246,7 @@ class Common
     }
 
     /**
-     *填充默认的header信息
+     * 填充默认的header信息
      *
      **/
     private function defaultHeader($header)
