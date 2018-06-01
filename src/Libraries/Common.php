@@ -273,7 +273,8 @@ class Common
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
-        try {
+	    $requestUrl = $this->addXdebugParams($requestUrl);
+	    try {
             $i = 0;
             query:
             $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
@@ -318,7 +319,8 @@ class Common
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
-        try {
+	    $requestUrl = $this->addXdebugParams($requestUrl);
+	    try {
             $i = 0;
             request:
             $result = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
@@ -356,6 +358,7 @@ class Common
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
+        $requestUrl = $this->addXdebugParams($requestUrl);
         try {
             $i = 0;
             postRequest:
@@ -397,7 +400,8 @@ class Common
     {
         $objHttpClient = app('HttpClient');
         foreach ($arrRequestData as $url => $data) {
-            $tmp            = [
+	        $url = $this->addXdebugParams($url);
+	        $tmp            = [
                 'form_params' => $data,
                 'headers'     => $this->defaultHeader([]),
             ];
@@ -467,7 +471,8 @@ class Common
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
-        try {
+	    $requestUrl = $this->addXdebugParams($requestUrl);
+	    try {
             $i = 0;
             request:
             $result = $httpClient->request('POST', $requestUrl,
@@ -569,7 +574,8 @@ class Common
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
-        try {
+	    $requestUrl = $this->addXdebugParams($requestUrl);
+	    try {
             $i = 0;
             requestJson:
             $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
@@ -809,4 +815,26 @@ class Common
     {
         return config('common_config.no_log_routes') && in_array(parse_url($pathInfo)['path'], config('common_config.no_log_routes'));
     }
+
+	/**
+	 * 添加 xdebug 调试参数
+	 *
+	 * @param $url
+	 *
+	 * @return string
+	 */
+	private function addXdebugParams($url)
+	{
+		if (extension_loaded('xdebug')) {
+			$parsed = parse_url($url);
+			$xdebugParams = 'XDEBUG_SESSION_START=' . rand(10000, 20000);
+			if (empty($parsed['query'])) {
+				$url .= '?' . $xdebugParams;
+			} else {
+				$url .= '&' . $xdebugParams;
+			}
+		}
+
+		return $url;
+	}
 }
