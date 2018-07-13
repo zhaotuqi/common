@@ -11,12 +11,4 @@ return [
     'no_log_routes' => [],
     // 有请求记录但无body
     'no_log_body_routes' => [],
-
-    //报警的项目
-    'warning_app_name' => [
-        "fudao_callcenter"
-    ],
-
-    //报警的时长
-    'warning_time'     => 3,
 ];

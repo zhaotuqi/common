@@ -296,10 +296,9 @@ class Common
             'response_body'  => $this->logReduce($result)
         ];
 
-        if (in_array(config('app.app_name'), config('common_config.warning_app_name')) && $message['response_time'] > config('common_config.warning_time')) {
-            Log::warning('[warning] 呀！接口响应时长超' . config('common_config.warning_time') . 'S了，快看这个接口！'.$requestUrl);
+        if (config('app.app_name') == "fudao_callcenter" && $message['response_time'] > 3) {
+            Log::warning('[warning] 呀！接口响应时长超3S了，快看这个接口！' . $requestUrl);
         }
-
 
         //记录log
         $this->logger(
