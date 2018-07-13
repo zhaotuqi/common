@@ -10,5 +10,5 @@ return [
     // 完全无日志记录
     'no_log_routes' => [],
     // 有请求记录但无body
-    'no_log_body_routes' => []
+    'no_log_body_routes' => [],
 ];
