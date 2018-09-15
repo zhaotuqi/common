@@ -854,7 +854,7 @@ class Common
         }
         $message_body = [
             'msg_code'    => $code,
-            'http_loginid' => $_SERVER['HTTP_LOGID'],
+            'http_logid' => $_SERVER['HTTP_LOGID'],
             'message'   => $message,
         ];
         Common::logger(config('app.app_name'),
