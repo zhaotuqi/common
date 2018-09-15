@@ -841,4 +841,26 @@ class Common
 
 		return $url;
 	}
+
+    /**
+     * 记录业务日志
+     * @param $code 业务码
+     * @param $message 消息体
+     */
+    public function busLogger($code, $message)
+    {
+        if(!isset($_SERVER['HTTP_LOGID'])){
+            $_SERVER['HTTP_LOGID'] = uniqid() . rand(1, 1000);
+        }
+        $message_body = [
+            'msg_code'    => $code,
+            'http_logid' => $_SERVER['HTTP_LOGID'],
+            'message'   => $message,
+        ];
+        Common::logger(config('app.app_name'),
+            'requestlog.log',
+            json_encode($message_body, JSON_UNESCAPED_UNICODE),
+            Logger::INFO
+        );
+    }
 }
