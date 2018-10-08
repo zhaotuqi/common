@@ -57,7 +57,7 @@ class Common
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
         $param = [
-            'messages'    => $e->getMessage(),
+            'messages'    => gethostname()." ".$e->getMessage(),
             'request_url' => $requestUrl,
             'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
             'trace'       => str_replace("\n", "<br/>", $e->getTraceAsString()),
@@ -187,7 +187,7 @@ class Common
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
         $param = [
-            'messages'    => $message,
+            'messages'    => gethostname()." ".$message,
             'request_url' => $requestUrl,
             'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
             'trace'       => json_encode($param, JSON_UNESCAPED_UNICODE),
