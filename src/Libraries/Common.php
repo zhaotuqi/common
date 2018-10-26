@@ -227,6 +227,40 @@ class Common
     }
 
     /**
+     * 接口请求打点
+     * @author hongfei.geng<hongfei.geng@wenba100.com>
+     * @Date: 2018-10-26
+     * @param $url
+     * @param $costMs
+     * @param int $httpCode
+     */
+    private static function requestToFalcon($url,$costMs,$httpCode = 200){
+        $url = trim($url);
+        if(!env("REQUEST_TO_FALCON") || !class_exists('\Monitor\Client') || strlen($url) == 0 || !$costMs){
+            return ;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        if(!$host){
+            return ;
+        }
+
+        try{
+            //打点次数
+            \Monitor\Client::inc(sprintf("%s,h=%s,t=api_count",$url,$host));
+            if(200 != $httpCode){
+                //打点服务器异常的次数
+                \Monitor\Client::inc(sprintf("%s,h=%s,t=api_error,c=%d",$url,$host,$httpCode));
+            }
+            //打点请求时长
+            \Monitor\Client::cost(sprintf("%s,h=%s,t=api_cost",$url,$host),$costMs);
+            
+        }catch (Exception $e){
+            Log::info('记录Falcon失败',$e->getMessage());
+        }
+
+    }
+    /**
      * 判断日期格式
      * @param $date
      * @return bool
@@ -277,7 +311,12 @@ class Common
 	    try {
             $i = 0;
             query:
-            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
+            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -295,7 +334,6 @@ class Common
             'request_body'   => $this->logReduce($param),
             'response_body'  => $this->logReduce($result)
         ];
-
 
 
         //记录log
@@ -325,7 +363,12 @@ class Common
 	    try {
             $i = 0;
             request:
-            $result = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
+            $req = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -364,7 +407,12 @@ class Common
         try {
             $i = 0;
             postRequest:
-            $result = $httpClient->request('POST', $requestUrl, ['body' => $param, 'verify' => false, 'headers' => $headers])->getBody()->getContents();
+            $req = $httpClient->request('POST', $requestUrl, ['body' => $param, 'verify' => false, 'headers' => $headers]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -432,7 +480,12 @@ class Common
         try {
             $i = 0;
             query:
-            $result = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
+            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 2) {
                 $i++;
@@ -477,14 +530,18 @@ class Common
 	    try {
             $i = 0;
             request:
-            $result = $httpClient->request('POST', $requestUrl,
+            $req = $httpClient->request('POST', $requestUrl,
                 [
                     'multipart'       => $multipart,
                     'headers'         => $headers,
                     'timeout'         => 30,
                     'connect_timeout' => 10
-                ])->getBody()->getContents();
+                ]);
 
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -538,7 +595,12 @@ class Common
 			else {
 				$requestUrl = $arrRequestUrl['master'];
 			}
-            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3])->getBody()->getContents();
+            $req = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -580,7 +642,12 @@ class Common
 	    try {
             $i = 0;
             requestJson:
-            $result = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30])->getBody()->getContents();
+            $req = $httpClient->request('POST', $requestUrl, ['json' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
@@ -861,4 +928,6 @@ class Common
             Logger::INFO
         );
     }
+
+
 }
