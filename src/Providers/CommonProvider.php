@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Libraries\WenBaRedis;
 use Illuminate\Support\ServiceProvider;
 use App\Libraries\Common;
 
@@ -36,6 +37,10 @@ class CommonProvider extends ServiceProvider
         //
         $this->app->bind('Common', function () {
             return new Common();
+        });
+        //注册wredis 作为redis的替换方式，在每个应用中将 app('wredis') 替换 app('redis')即可
+        $this->app->bind('wredis', function () {
+            return new WenBaRedis();
         });
     }
 }
