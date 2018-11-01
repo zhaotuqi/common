@@ -586,6 +586,7 @@ class Common
     {
 		$headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
         try {
             $i = 0;
             requestJson:
