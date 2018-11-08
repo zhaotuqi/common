@@ -56,12 +56,16 @@ class Common
      */
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
+        //过滤开发测试环境
+        if(self::checkAllowWarningEnv() == false) {
+            return false;
+        }
         $param = [
-            'messages'    => gethostname()." ".$e->getMessage(),
+            'messages' => gethostname() . " " . $e->getMessage(),
             'request_url' => $requestUrl,
-            'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'trace'       => str_replace("\n", "<br/>", $e->getTraceAsString()),
-            'title'       => $title
+            'param' => json_encode($param, JSON_UNESCAPED_UNICODE),
+            'trace' => str_replace("\n", "<br/>", $e->getTraceAsString()),
+            'title' => $title
         ];
 
         $client = app('HttpClient');
@@ -186,6 +190,10 @@ class Common
      */
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
+        //过滤开发测试环境
+        if(self::checkAllowWarningEnv() == false) {
+            return false;
+        }
         $param = [
             'messages'    => gethostname()." ".$message,
             'request_url' => $requestUrl,
@@ -195,6 +203,7 @@ class Common
         ];
 
         $client = app('HttpClient');
+
         try {
             $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
             $promise->wait();
@@ -930,5 +939,16 @@ class Common
         );
     }
 
+    //检查env环境是否允许报警
+    private static function checkAllowWarningEnv()
+    {
+        $allowWarningEnv = ['pro', 'production'];
+
+        if(in_array(strtolower(env('APP_ENV')), $allowWarningEnv)) {
+
+            return true;
+        }
+        return false;
+    }
 
 }
