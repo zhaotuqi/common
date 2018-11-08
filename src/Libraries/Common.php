@@ -56,20 +56,22 @@ class Common
      */
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
-        $param = [
-            'messages'    => gethostname()." ".$e->getMessage(),
-            'request_url' => $requestUrl,
-            'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'trace'       => str_replace("\n", "<br/>", $e->getTraceAsString()),
-            'title'       => $title
-        ];
+        if(env('APP_ENV') == 'pro' || env('APP_ENV') == 'production') {
+            $param = [
+                'messages' => gethostname() . " " . $e->getMessage(),
+                'request_url' => $requestUrl,
+                'param' => json_encode($param, JSON_UNESCAPED_UNICODE),
+                'trace' => str_replace("\n", "<br/>", $e->getTraceAsString()),
+                'title' => $title
+            ];
 
-        $client = app('HttpClient');
-        try {
-            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
-            $promise->wait();
-        } catch (Exception $e) {
-            Log::info('写日志超时' . $e->getMessage());
+            $client = app('HttpClient');
+            try {
+                $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
+                $promise->wait();
+            } catch (Exception $e) {
+                Log::info('写日志超时' . $e->getMessage());
+            }
         }
     }
 
@@ -186,16 +188,17 @@ class Common
      */
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
-        $param = [
-            'messages'    => gethostname()." ".$message,
-            'request_url' => $requestUrl,
-            'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'trace'       => json_encode($param, JSON_UNESCAPED_UNICODE),
-            'title'       => $title
-        ];
-
-        $client = app('HttpClient');
         if(env('APP_ENV') == 'pro' || env('APP_ENV') == 'production') {
+            $param = [
+                'messages'    => gethostname()." ".$message,
+                'request_url' => $requestUrl,
+                'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
+                'trace'       => json_encode($param, JSON_UNESCAPED_UNICODE),
+                'title'       => $title
+            ];
+
+            $client = app('HttpClient');
+
             try {
                 $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
                 $promise->wait();
