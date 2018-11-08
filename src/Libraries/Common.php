@@ -195,11 +195,13 @@ class Common
         ];
 
         $client = app('HttpClient');
-        try {
-            $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
-            $promise->wait();
-        } catch (Exception $e) {
-            Log::info('写日志超时' . $e->getMessage());
+        if(env('APP_ENV') == 'production') {
+            try {
+                $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
+                $promise->wait();
+            } catch (Exception $e) {
+                Log::info('写日志超时' . $e->getMessage());
+            }
         }
     }
 
