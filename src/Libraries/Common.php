@@ -195,7 +195,7 @@ class Common
         ];
 
         $client = app('HttpClient');
-        if(env('APP_ENV') == 'production') {
+        if(env('APP_ENV') == 'pro') {
             try {
                 $promise = $client->requestAsync('POST', config('common_config.warning_email_url'), ['json' => $param, 'timeout' => 3, 'connect_timeout' => 3]);
                 $promise->wait();
