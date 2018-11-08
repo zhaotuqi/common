@@ -944,7 +944,7 @@ class Common
     {
         $allowWarningEnv = ['pro', 'production'];
 
-        if(in_array(env('APP_ENV'), $allowWarningEnv)) {
+        if(in_array(strtolower(env('APP_ENV')), $allowWarningEnv)) {
 
             return true;
         }
