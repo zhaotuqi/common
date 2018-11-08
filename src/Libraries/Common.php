@@ -57,7 +57,7 @@ class Common
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
         //过滤开发测试环境
-        if($this->checkAllowWarningEnv() == false) {
+        if(self::checkAllowWarningEnv() == false) {
             return false;
         }
         $param = [
@@ -191,7 +191,7 @@ class Common
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
         //过滤开发测试环境
-        if($this->checkAllowWarningEnv() == false) {
+        if(self::checkAllowWarningEnv() == false) {
             return false;
         }
         $param = [
@@ -940,7 +940,7 @@ class Common
     }
 
     //检查env环境是否允许报警
-    private function checkAllowWarningEnv()
+    private static function checkAllowWarningEnv()
     {
         $allowWarningEnv = ['pro', 'production'];
 
