@@ -59,8 +59,7 @@ class Common
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
         //过滤开发测试环境
-        if(!in_array(env('APP_ENV'), $this->allowWarningEnv)) {
-
+        if($this->checkAllowWarningEnv() == false) {
             return false;
         }
         $param = [
@@ -194,11 +193,9 @@ class Common
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
         //过滤开发测试环境
-        if(!in_array(env('APP_ENV'), $this->allowWarningEnv)) {
-
+        if($this->checkAllowWarningEnv() == false) {
             return false;
         }
-
         $param = [
             'messages'    => gethostname()." ".$message,
             'request_url' => $requestUrl,
@@ -944,5 +941,14 @@ class Common
         );
     }
 
+    //检查env环境是否允许报警
+    private function checkAllowWarningEnv()
+    {
+        if(in_array(env('APP_ENV'), $this->allowWarningEnv)) {
+
+            return true;
+        }
+        return false;
+    }
 
 }
