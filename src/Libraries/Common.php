@@ -19,8 +19,6 @@ class Common
 {
     const EACH_PAGE_NUM = 10000;
 
-    protected $allowWarningEnv = ['pro', 'production'];
-
     public function convertString(array $param)
     {
         return array_map(function ($v) {
@@ -944,7 +942,9 @@ class Common
     //检查env环境是否允许报警
     private function checkAllowWarningEnv()
     {
-        if(in_array(env('APP_ENV'), $this->allowWarningEnv)) {
+        $allowWarningEnv = ['pro', 'production'];
+
+        if(in_array(env('APP_ENV'), $allowWarningEnv)) {
 
             return true;
         }
