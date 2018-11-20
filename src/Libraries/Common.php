@@ -959,7 +959,7 @@ class Common
     public function verifyIdentifyNO($IDNumber)
     {
         $len = strlen($IDNumber);
-        if (!$len == 15 && !$len == 18) {
+        if ($len != 15 && $len != 18) {
             return false;
         }
         if ($len == 15) {//一代身份证只校验全为数字
