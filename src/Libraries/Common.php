@@ -701,6 +701,53 @@ class Common
         return array_merge($array, $param, $list);
     }
 
+    /**
+     * 发送body raw data 请求
+     * @param $requestUrl
+     * @param $param
+     * @return mixed
+     */
+    public function requestBody($requestUrl, $param, $headers = [])
+    {
+        $headers    = $this->defaultHeader($headers);
+        $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
+        $requestUrl = $this->addXdebugParams($requestUrl);
+        try {
+            $i = 0;
+            requestJson:
+            $req = $httpClient->request('POST', $requestUrl, ['body' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+            $result = $req->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            if ($i < 5) {
+                $i++;
+                goto requestJson;
+            } else {
+                throw $e;
+            }
+        }
+
+        $message = [
+            'response_time'  => microtime(true) - $startTime,
+            'request_uri'    => $requestUrl,
+            'request_header' => $headers,
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
+        ];
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog.log',
+            $message,
+            Logger::INFO
+        );
+
+        return $result;
+    }
+
     public function getOrderId($prefix = null)
     {
         return $prefix . date('YmdHis') . substr(base_convert(uniqid(), 16, 10), -4) . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
