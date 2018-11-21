@@ -956,7 +956,7 @@ class Common
      *
      * @reutrn bool
      */
-    public function verifyIdentifyNO($IDNumber)
+    public static function verifyIdentifyNO($IDNumber)
     {
         $len = strlen($IDNumber);
         if ($len != 15 && $len != 18) {
