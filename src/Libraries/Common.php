@@ -973,7 +973,7 @@ class Common
             for ($index = 0; $index < 17; $index++) {
                 $verifyNumber += $IDNumber[$index] * $weight[$index];
             }
-            $veirfyNumber = $verifyNumber % 11;//获得最终校验码
+            $verifyNumber = $verifyNumber % 11;//获得最终校验码
             return $verify[$verifyNumber] == $IDNumber[17];
         }
     }
