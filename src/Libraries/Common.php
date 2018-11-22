@@ -950,5 +950,31 @@ class Common
         }
         return false;
     }
-
+    /* *
+     * 校验身份证号码
+     * @param $IDNumber
+     *
+     * @reutrn bool
+     */
+    public static function verifyIdentifyNO($IDNumber)
+    {
+        $len = strlen($IDNumber);
+        if ($len != 15 && $len != 18) {
+            return false;
+        }
+        if ($len == 15) {//一代身份证只校验全为数字
+            return is_numeric($IDNumber);
+        }
+        if ($len == 18) {
+            $weight = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+            $verify = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+            $IDNumber = strtoupper($IDNumber);//同时会转成字符串
+            $verifyNumber = 0;
+            for ($index = 0; $index < 17; $index++) {
+                $verifyNumber += $IDNumber[$index] * $weight[$index];
+            }
+            $verifyNumber = $verifyNumber % 11;//获得最终校验码
+            return $verify[$verifyNumber] == $IDNumber[17];
+        }
+    }
 }
