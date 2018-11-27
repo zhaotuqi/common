@@ -1024,4 +1024,20 @@ class Common
             return $verify[$verifyNumber] == $IDNumber[17];
         }
     }
+
+    /**
+     * 过滤特殊字符，只保留中文、英文、数字、下划线
+     * @param $chars
+     * @param string $encoding
+     * @return string
+     * @author shiyao.niu@wenba100.com
+     * @date   2018-11-27
+     */
+    public function filterSpecialChars($chars,$encoding='utf8')
+    {
+        $pattern =($encoding=='utf8')?'/[\x{4e00}-\x{9fa5}a-zA-Z0-9_]/u':'/[\x80-\xFF]/';
+        preg_match_all($pattern,$chars,$result);
+        $temp =join('',$result[0]);
+        return $temp;
+    }
 }
