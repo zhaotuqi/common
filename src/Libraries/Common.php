@@ -1033,8 +1033,10 @@ class Common
      * @author shiyao.niu@wenba100.com
      * @date   2018-11-27
      */
-    public function filterSpecialChars($chars,$encoding='utf8')
+    public static function filterSpecialChars($chars,$encoding='utf8')
     {
+        if(empty($chars)) return '';
+        
         $pattern =($encoding=='utf8')?'/[\x{4e00}-\x{9fa5}a-zA-Z0-9_]/u':'/[\x80-\xFF]/';
         preg_match_all($pattern,$chars,$result);
         $temp =join('',$result[0]);
