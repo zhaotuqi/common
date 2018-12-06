@@ -989,7 +989,7 @@ class Common
     //检查env环境是否允许报警
     private static function checkAllowWarningEnv()
     {
-        $allowWarningEnv = ['pro', 'production'];
+        $allowWarningEnv = ['pro', 'production', 'preview'];
 
         if(in_array(strtolower(env('APP_ENV')), $allowWarningEnv)) {
 
