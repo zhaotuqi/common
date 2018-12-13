@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Libraries\RabbitMq;
 use App\Libraries\WenBaRedis;
 use Illuminate\Support\ServiceProvider;
 use App\Libraries\Common;
@@ -43,14 +42,5 @@ class CommonProvider extends ServiceProvider
         $this->app->bind('wredis', function () {
             return new WenBaRedis();
         });
-
-        /**
-         * 注册消息队列服务
-         */
-        $this->app->bind('amq',function(){
-           return new RabbitMq();
-        });
     }
-
-
 }
