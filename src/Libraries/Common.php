@@ -1011,13 +1011,13 @@ class Common
         }
         if ($len == 15) {
             //一代身份证是20世纪19XX年
-            $birthdateStr = "19".substr($IDNumber,6, 6);
-            $mon = intval(substr($birthdateStr,4,2));
-            $day = intval(substr($birthdateStr,6,2));
-            if($mon<1||$mon>12){
+            $birthdateStr = "19" . substr($IDNumber, 6, 6);
+            $mon = intval(substr($birthdateStr, 4, 2));
+            $day = intval(substr($birthdateStr, 6, 2));
+            if ($mon < 1 || $mon > 12) {
                 return false;
             }
-            if($day<1||$day>31){
+            if ($day < 1 || $day > 31) {
                 return false;
             }
             return is_numeric($IDNumber);
@@ -1027,10 +1027,10 @@ class Common
             $birthdateStr = substr($IDNumber, 6, 8);
             $mon = intval(substr($birthdateStr, 4, 2));
             $day = intval(substr($birthdateStr, 6, 2));
-            if($mon<1||$mon>12){
+            if ($mon < 1 || $mon > 12) {
                 return false;
             }
-            if($day<1||$day>31){
+            if ($day < 1 || $day > 31) {
                 return false;
             }
             $weight = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
