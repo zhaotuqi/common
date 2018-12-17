@@ -1009,10 +1009,30 @@ class Common
         if ($len != 15 && $len != 18) {
             return false;
         }
-        if ($len == 15) {//一代身份证只校验全为数字
+        if ($len == 15) {
+            //一代身份证是20世纪19XX年
+            $birthdateStr = "19" . substr($IDNumber, 6, 6);
+            $mon = intval(substr($birthdateStr, 4, 2));
+            $day = intval(substr($birthdateStr, 6, 2));
+            if ($mon < 1 || $mon > 12) {
+                return false;
+            }
+            if ($day < 1 || $day > 31) {
+                return false;
+            }
             return is_numeric($IDNumber);
         }
         if ($len == 18) {
+            //二代身份证校验
+            $birthdateStr = substr($IDNumber, 6, 8);
+            $mon = intval(substr($birthdateStr, 4, 2));
+            $day = intval(substr($birthdateStr, 6, 2));
+            if ($mon < 1 || $mon > 12) {
+                return false;
+            }
+            if ($day < 1 || $day > 31) {
+                return false;
+            }
             $weight = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
             $verify = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
             $IDNumber = strtoupper($IDNumber);//同时会转成字符串
