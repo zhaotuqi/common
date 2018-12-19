@@ -16,29 +16,12 @@ class RabbitMq
     private function getCon(){
         static $con = false;
         if($con === false){
-
-            switch(env('RABBITMQ_ENV')){
-                case 'qa01':
-                    $con = new AMQPStreamConnection('10.2.1.126', 5673, 'guest', 'guest');
-                    break;
-                case 'qa02':
-                    $con = new AMQPStreamConnection('10.2.1.126', 5674, 'guest', 'guest');
-                    break;
-                case 'qa03':
-                    $con = new AMQPStreamConnection('10.2.1.126', 5675, 'guest', 'guest');
-                    break;
-                case 'release':
-                    $con = new AMQPStreamConnection('10.21.93.218', 5672, 'guest', 'guest');
-                    break;
-                case 'online':
-                    $con = new AMQPStreamConnection('10.10.90.107', 5672, 'guest', 'guest');
-                    break;
-                default:
-                    $con = new AMQPStreamConnection('10.2.1.126', 5672, 'guest', 'guest');
-                    break;
-
-            }
-
+            $con = new AMQPStreamConnection(
+                env('RABBITMQ_HOST','10.2.1.126'),
+                env('RABBITMQ_PORT',5672),
+                env('RABBITMQ_USER','guest'),
+                env('RABBITMQ_PASSWORD','guest')
+            );
         }
 
         return $con;
@@ -61,9 +44,11 @@ class RabbitMq
                 $amqMsg = new AMQPMessage($msg);
                 $ret = $channel->basic_publish($amqMsg, $exchange);
                 $channel->close();
+            }else{
+                throw new \Exception("链接RabbitMq失败");
             }
         }catch (\Exception $e){
-            dispatch((new RabbitMqJob($exchange,$msg))->delay(15));
+            dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
         }
         return $ret;
     }
