@@ -61,16 +61,22 @@ class RabbitMq
      * @param $callBack
      */
     public function consumeQueue($queueName,$callBack){
-        $con = $this->getCon();
-        if($con) {
+        try {
+            $con = $this->getCon();
+            if ($con) {
 
-            $channel = $con->channel();
-            $channel->queue_declare($queueName, false, true, false, false);
-            $channel->basic_consume($queueName, '', false, false, false, false, $callBack);
+                $channel = $con->channel();
+                $channel->queue_declare($queueName, false, true, false, false);
+                $channel->basic_consume($queueName, '', false, false, false, false, $callBack);
 
-            while (count($channel->callbacks)) {
-                $channel->wait();
+                while (count($channel->callbacks)) {
+                    $channel->wait();
+                }
             }
+        }catch (\Exception $e){
+            echo sprintf("[%s] %s\n",date("Y-m-d H:i:s"),$e->getTraceAsString());
+            sleep(15);
+            return $this->consumeQueue($queueName,$callBack);
         }
     }
 
