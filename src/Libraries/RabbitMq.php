@@ -15,7 +15,7 @@ class RabbitMq
 {
     private function getCon(){
         static $con = false;
-        if($con === false){
+        if($con === false || $con->isConnected() === false){
             $con = new AMQPStreamConnection(
                 env('RABBITMQ_HOST','10.2.1.126'),
                 env('RABBITMQ_PORT',5672),
