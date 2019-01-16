@@ -47,7 +47,7 @@ class CommonProvider extends ServiceProvider
         /**
          * 注册消息队列服务
          */
-        $this->app->bind('amq',function(){
+        $this->app->singleton('amq',function(){
            return new RabbitMq();
         });
     }
