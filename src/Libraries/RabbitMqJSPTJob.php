@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Bus\Queueable;
 
-class RabbitMqJSPT implements ShouldQueue
+class RabbitMqJSPTJob implements ShouldQueue
 {
     use Queueable;
     use InteractsWithQueue, SerializesModels;

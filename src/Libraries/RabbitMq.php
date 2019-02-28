@@ -143,7 +143,7 @@ class RabbitMq
 
         }catch (\Exception $e) {
 
-            dispatch((new RabbitMqJSPT($exchange, $msg))->delay(60));
+            dispatch((new RabbitMqJSPTJob($exchange, $msg))->delay(60));
         }
     }
 }
