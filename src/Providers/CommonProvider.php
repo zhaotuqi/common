@@ -50,6 +50,11 @@ class CommonProvider extends ServiceProvider
         $this->app->singleton('amq',function(){
            return new RabbitMq();
         });
+
+        /**
+         * 结算平台ID生成器
+         */
+        $this->app->bind('SettlementPlatformIdGernerator', SettlementPlatformIdGernerator::class);
     }
 
 
