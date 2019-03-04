@@ -6,6 +6,7 @@ use App\Libraries\RabbitMq;
 use App\Libraries\WenBaRedis;
 use Illuminate\Support\ServiceProvider;
 use App\Libraries\Common;
+use App\Libraries\SettlementPlatformIdGernerator;
 
 class CommonProvider extends ServiceProvider
 {
