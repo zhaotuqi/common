@@ -11,7 +11,6 @@ namespace App\Libraries;
 /**
  * 生成规则仅用于结算平台
  *
- * 预发使用测试地址生成id
  */
 
 use Log;
@@ -48,41 +47,41 @@ class SettlementPlatformIdGernerator
      */
     public function IdGenerator()
     {
-        //ID生成器配置检查
+        $id = null;
+
         $config = [
             'uri' => env('RTC_BASE_UUID_SERVICE_URI', ""),
             'app_id' => env('RTC_BASE_UUID_APP_ID', ""),
             'app_key' => env('RTC_BASE_UUID_APP_KEY', "")
         ];
+        //检查ID生成器配置
         $check_config_msg = "";
-
-        $check_config_msg .= empty($config["uri"]) ? ".env未配置： RTC_BASE_UUID_SERVICE_URI " . PHP_EOL : "";
-        $check_config_msg .= empty($config["app_id"]) ? ".env未配置：  RTC_BASE_UUID_APP_ID " . PHP_EOL : "";
-        $check_config_msg .= empty($config["app_key"]) ? ".env未配置： RTC_BASE_UUID_APP_KEY " . PHP_EOL : "";
-
-        if (empty($check_config_msg)) {
+        $check_config_msg .= empty($config["uri"]) ? ".env文件： RTC_BASE_UUID_SERVICE_URI 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($config["app_id"]) ? ".env文件：  RTC_BASE_UUID_APP_ID 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($config["app_key"]) ? ".env文件： RTC_BASE_UUID_APP_KEY 未配置" . PHP_EOL : "";
+        if (!empty($check_config_msg)) {
             throw new \Exception(PHP_EOL . $check_config_msg);
-        }
-
-        //ID 生成器规则   //时间段+自增序列 201903011500+incr_id
-        $id = null;
-        $date = date("YmdHis", time());
-        try {
-            $param = [
-                "app_id" => $config["app_id"],
-                'app_key' => $config["app_key"]
-            ];
-            $response = app('Common')->requestJson($config['uri'], $param);
-            $result = json_decode($response, true);
-            if ($result["statusCode"] == 0) {
-                $id = $result["data"]['seq'];
-                return $date . $id;
-            } else {
-                throw new \Exception($response);
+        } else {
+            //ID 生成器规则   //时间段+自增序列 201903011500+incr_id
+            $date = date("YmdHis", time());
+            try {
+                $param = [
+                    "app_id" => $config["app_id"],
+                    'app_key' => $config["app_key"]
+                ];
+                $response = app('Common')->requestJson($config['uri'], $param);
+                $result = json_decode($response, true);
+                if ($result["statusCode"] == 0) {
+                    //生成正确的ID
+                    $id = $date . $result["data"]['seq'];
+                    return $id;
+                } else {
+                    throw new \Exception($response);
+                }
+            } catch (\Exception $e) {
+                throw new \Exception('ID 创建异常' . $e->getMessage());
+                Log::info('ID 创建异常' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            throw new \Exception('ID 创建异常' . $e->getMessage());
-            Log::info('ID 创建异常' . $e->getMessage());
         }
     }
 }
