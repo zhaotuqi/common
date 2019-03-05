@@ -79,8 +79,8 @@ class SettlementPlatformIdGernerator
                     throw new \Exception($response);
                 }
             } catch (\Exception $e) {
-                throw new \Exception('ID 创建异常' . $e->getMessage());
                 Log::info('ID 创建异常' . $e->getMessage());
+                throw new \Exception('ID 创建异常' . $e->getMessage());
             }
         }
     }
