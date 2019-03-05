@@ -50,9 +50,9 @@ class SettlementPlatformIdGernerator
     {
         //ID生成器配置检查
         $config = [
-            'uri' => env('RTC_BASE_UUID_SERVICE_URI'),
-            'app_id' => env('RTC_BASE_UUID_APP_ID'),
-            'app_key' => env('RTC_BASE_UUID_APP_KEY')
+            'uri' => env('RTC_BASE_UUID_SERVICE_URI', ""),
+            'app_id' => env('RTC_BASE_UUID_APP_ID', ""),
+            'app_key' => env('RTC_BASE_UUID_APP_KEY', "")
         ];
         $check_config_msg = "";
 
