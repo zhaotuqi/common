@@ -1062,4 +1062,16 @@ class Common
         $temp =join('',$result[0]);
         return $temp;
     }
+
+    /**
+     * 获取毫秒数的时间戳
+     *
+     * @return string
+     */
+    public static function getMicrotime()
+    {
+        list($msec, $sec) = explode(' ',microtime());
+
+        return (string)sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
+    }
 }

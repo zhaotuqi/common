@@ -6,6 +6,7 @@ use App\Libraries\RabbitMq;
 use App\Libraries\WenBaRedis;
 use Illuminate\Support\ServiceProvider;
 use App\Libraries\Common;
+use App\Libraries\SettlementPlatformIdGernerator;
 
 class CommonProvider extends ServiceProvider
 {
@@ -50,6 +51,11 @@ class CommonProvider extends ServiceProvider
         $this->app->singleton('amq',function(){
            return new RabbitMq();
         });
+
+        /**
+         * 结算平台ID生成器
+         */
+        $this->app->bind('SettlementPlatformIdGernerator', SettlementPlatformIdGernerator::class);
     }
 
 
