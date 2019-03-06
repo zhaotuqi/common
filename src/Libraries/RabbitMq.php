@@ -138,7 +138,7 @@ class RabbitMq
             // 发布MQ消息
             $channel->basic_publish($amqMsg, $exchange);
 
-            // 关闭交换机
+            // 关闭频道
             $channel->close();
 
         }catch (\Exception $e) {
