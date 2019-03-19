@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Libraries\JavaConf;
 use App\Libraries\RabbitMq;
 use App\Libraries\WenBaRedis;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +57,13 @@ class CommonProvider extends ServiceProvider
          * 结算平台ID生成器
          */
         $this->app->bind('SettlementPlatformIdGernerator', SettlementPlatformIdGernerator::class);
+
+        /**
+         * Java配置中心
+         */
+        $this->app->singleton('JavaConf',function(){
+            return new JavaConf();
+        });
     }
 
 
