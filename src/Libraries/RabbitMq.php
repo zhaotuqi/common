@@ -39,10 +39,22 @@ class RabbitMq
             $con = $this->getCon();
             if($con) {
                 $channel = $con->channel();
+                $channel->confirm_select();
+                $isSendOk = false;
+                $channel->set_ack_handler(function($message)use(&$isSendOk){
+                    $isSendOk = true;
+                });
+                $channel->set_nack_handler(function ($message)use ($exchange,$msg){
+                    dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
+                });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
                 $amqMsg = new AMQPMessage($msg);
                 $ret = $channel->basic_publish($amqMsg, $exchange);
+                $channel->wait_for_pending_acks(3);
                 $channel->close();
+                if(!$isSendOk){
+                    throw new \Exception("发送消息失败");
+                }
             }else{
                 throw new \Exception("链接RabbitMq失败");
             }
