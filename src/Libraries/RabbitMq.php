@@ -7,6 +7,7 @@
 
 namespace App\Libraries;
 
+use Monolog\Logger;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -26,6 +27,15 @@ class RabbitMq
         return $con;
     }
 
+    public function logger($exchange,$msg,$level = Logger::INFO)
+    {
+        $appName = config('app.app_name');
+        $log    = new Logger($appName);
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmq.log', config('app.log_max_files'));
+        $log->pushHandler($handle);
+        $log->log($level, sprintf('%s -> %s',$exchange,$msg));
+
+    }
     /**
      * 发送消息
      * @author hongfei.geng<hongfei.geng@wenba100.com>
@@ -35,6 +45,7 @@ class RabbitMq
      */
     public function sendQueue($exchange,$msg){
         $ret = false;
+        $this->logger($exchange,$msg);
         try{
             $con = $this->getCon();
             if($con) {
@@ -53,9 +64,11 @@ class RabbitMq
                 $channel->wait_for_pending_acks(3);
                 $channel->close();
                 if(!$isSendOk){
+                    $this->logger($exchange,$msg.' ： 发送失败',Logger::WARNING);
                     throw new \Exception("发送消息失败");
                 }
             }else{
+                $this->logger($exchange,$msg.' ： 链接断开',Logger::WARNING);
                 throw new \Exception("链接RabbitMq失败");
             }
         }catch (\Exception $e){
