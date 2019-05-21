@@ -248,6 +248,24 @@ class JavaConf
     }
 
     /**
+     * @param $table
+     * @param $data
+     * @return array
+     * 格式化
+     */
+    private function _formatTable($table, $data)
+    {
+        $items = [];
+        foreach ($table as $key => $value) {
+            $items[] = [
+                'item_id'       => $key,
+                'item_value'    => !is_null(array_get($data, $value, '')) ? array_get($data, $value, '') : '',
+            ];
+        }
+        return $items;
+    }
+
+    /**
      * 获取配置信息
      * app('JavaConf')->fetchConfig(27,'payment_type.10.white_list','');
      * @author: 耿鸿飞<15911185633>
@@ -351,13 +369,8 @@ class JavaConf
             return "参数格式错误";
         }
 
-        $items  = [];
-        foreach ($tableList as $key => $value) {
-            $items[] = [
-                'item_id'       => $key,
-                'item_value'    => array_get($info, $value, ''),
-            ];
-        }
+        $items = $this->_formatTable($tableList, $info);
+
         try{
             $response = app('Common')->requestJson($url, [
                 'config_id' => $configId,
@@ -398,13 +411,8 @@ class JavaConf
             return "参数格式错误";
         }
 
-        $items  = [];
-        foreach ($tableList as $key => $value) {
-            $items[] = [
-                'item_id'       => $key,
-                'item_value'    => array_get($info, $value, ''),
-            ];
-        }
+        $items  = $this->_formatTable($tableList, $info);
+
         try{
             $response = app('Common')->requestJson($url, [
                 [
