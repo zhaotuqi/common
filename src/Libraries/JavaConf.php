@@ -11,22 +11,20 @@ namespace App\Libraries;
 class JavaConf
 {
     /**
-     * 获取配置的服务器地址
-     * @author: 耿鸿飞<15911185633>
-     * @date: 2019-03-19 18:06
-     * @link:
-     * @return bool|string
+     * java配置平台连接地址
+     * User: yaokun
+     * Date: 2019-05-29 12:04
+     * Email: <yaokun.xie@wenba100.com>
+     * @return mixed
+     * @throws \Exception
      */
-    private function getUrl(){
-        static $request_url = false;
-        if($request_url === false){
-            if('pro' == $this->getEnv()){
-                $request_url = 'http://10.19.71.110:8086/';
-            }else{
-                $request_url = 'http://10.2.1.154:8086/';
-            }
+    private function getUrl()
+    {
+        $javaConfigPlatformUrl = env("JAVA_CONFIG_CENTER");
+        if (empty($javaConfigPlatformUrl )) {
+            throw  new \Exception("library/common扩展需要java配置平台连接地址");
         }
-        return $request_url;
+        return $javaConfigPlatformUrl;
     }
 
     private function getEnv(){
