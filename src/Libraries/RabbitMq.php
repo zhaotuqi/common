@@ -13,14 +13,38 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class RabbitMq
 {
-    private function getCon(){
+    public function __construct()
+    {
+        $this->getCon();
+    }
+
+    private function getCon()
+    {
         static $con = false;
-        if($con === false || $con->isConnected() === false){
+        if ($con === false || $con->isConnected() === false) {
+
+            $rabbitmqConfig = [
+                "RABBITMQ_HOST" => env('RABBITMQ_HOST'),
+                "RABBITMQ_PORT" => env('RABBITMQ_PORT'),
+                "RABBITMQ_USER" => env('RABBITMQ_USER'),
+                "RABBITMQ_PASSWORD" => env('RABBITMQ_PASSWORD')
+            ];
+            //检查rabbitmq连接配置项
+            $check_config_msg = "";
+            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
+            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
+            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
+            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_PASSWORD"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
+
+            if (!empty($check_config_msg)) {
+                throw new \Exception(PHP_EOL . $check_config_msg);
+            }
+
             $con = new AMQPStreamConnection(
-                env('RABBITMQ_HOST','10.2.1.126'),
-                env('RABBITMQ_PORT',5672),
-                env('RABBITMQ_USER','guest'),
-                env('RABBITMQ_PASSWORD','guest')
+                $rabbitmqConfig['RABBITMQ_HOST'],
+                $rabbitmqConfig['RABBITMQ_PORT'],
+                $rabbitmqConfig['RABBITMQ_USER'],
+                $rabbitmqConfig['RABBITMQ_PASSWORD']
             );
         }
 
@@ -114,7 +138,7 @@ class RabbitMq
         $checkArray = [
             'RABBITMQ_HOST'        => env('RABBITMQ_HOST',''),
             'RABBITMQ_PORT'        => env('RABBITMQ_PORT',''),
-            'RABBITMQ_PORT'        => env('RABBITMQ_PORT',''),
+            'RABBITMQ_USER'        => env('RABBITMQ_USER',''),
             'RABBITMQ_PASSWORD'    => env('RABBITMQ_PASSWORD',''),
             'RABBITMQ_VHOST_JSPT'  => env('RABBITMQ_VHOST_JSPT','')
         ];
