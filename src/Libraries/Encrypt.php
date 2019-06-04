@@ -29,7 +29,7 @@ class Encrypt
         if (empty($data)) {
             throw new \Exception("加密数据不能为空");
         }
-        $key = md5($key);
+        $key = md5(strtoupper($key));
         $iv = empty($iv) ? self::$iv: $iv;
         $data=serialize($data);
         $encryptArr['iv']=base64_encode(substr($iv,0,16));
@@ -51,7 +51,7 @@ class Encrypt
         if (empty($encrypt)) {
             throw new \Exception("密文不能为空");
         }
-        $key = md5($key);
+        $key = md5(strtoupper($key));
         $encrypt = json_decode(base64_decode($encrypt), true);
         $iv = base64_decode($encrypt['iv']);
         $decrypt = openssl_decrypt($encrypt['value'], 'AES-256-CBC', $key, 0, $iv);
