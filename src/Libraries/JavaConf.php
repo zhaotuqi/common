@@ -460,6 +460,11 @@ class JavaConf
                 $this->falconInc("JavaConf:Error:delContent:DataEmpty,t=JavaConf");
                 return [];
             }
+            $list = json_decode(app('wredis')->get(sprintf("javaconf:%d:list", $configId)), true);
+            if(isset($list[$recordId])){
+                unset($list[$recordId]);
+                app('wredis')->set(sprintf("javaconf:%d:list", $configId), json_encode($list));
+            }
             return $jsonData;
         }catch (\Exception $e){
             $this->falconInc('JavaConf:Error:delContent:Exception,t=JavaConf');
