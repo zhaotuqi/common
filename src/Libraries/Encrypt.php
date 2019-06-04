@@ -23,6 +23,12 @@ class Encrypt
 
     public static function encryptsec($data,$key,$iv = '')
     {
+        if (empty($key)) {
+            throw new \Exception("key不能为空");
+        }
+        if (empty($data)) {
+            throw new \Exception("加密数据不能为空");
+        }
         $key = md5($key);
         $iv = empty($iv) ? self::$iv: $iv;
         $data=serialize($data);
@@ -39,6 +45,12 @@ class Encrypt
      */
     public static function decryptsec($encrypt,$key)
     {
+        if (empty($key)) {
+            throw new \Exception("key不能为空");
+        }
+        if (empty($encrypt)) {
+            throw new \Exception("密文不能为空");
+        }
         $key = md5($key);
         $encrypt = json_decode(base64_decode($encrypt), true);
         $iv = base64_decode($encrypt['iv']);
