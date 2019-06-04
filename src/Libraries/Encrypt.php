@@ -10,9 +10,11 @@ namespace App\Libraries;
 class Encrypt
 {
     private static $iv;
+    private static $cipher;
     public function __construct()
     {
-        self::$iv = 'Wenba;EdU190606#daf%sCd';
+        self::$iv       = 'Wenba;EdU190606#daf%sCd';
+        self::$cipher   = 'AES-256-CBC';
     }
 
     /**
@@ -33,7 +35,7 @@ class Encrypt
         $iv = empty($iv) ? self::$iv: $iv;
         $data=serialize($data);
         $encryptArr['iv']=base64_encode(substr($iv,0,16));
-        $encryptArr['value']=openssl_encrypt($data, 'AES-256-CBC',$key,0,base64_decode($encryptArr['iv']));
+        $encryptArr['value']=openssl_encrypt($data, self::$cipher,$key,0,base64_decode($encryptArr['iv']));
         $encrypt=base64_encode(json_encode($encryptArr));
         return $encrypt;
     }
@@ -54,7 +56,7 @@ class Encrypt
         $key = md5(strtoupper($key));
         $encrypt = json_decode(base64_decode($encrypt), true);
         $iv = base64_decode($encrypt['iv']);
-        $decrypt = openssl_decrypt($encrypt['value'], 'AES-256-CBC', $key, 0, $iv);
+        $decrypt = openssl_decrypt($encrypt['value'], self::$cipher, $key, 0, $iv);
         $data = unserialize($decrypt);
         return empty($data) ? '' : $data;
     }
