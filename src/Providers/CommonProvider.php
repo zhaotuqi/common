@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Libraries\Encrypt;
+use App\Libraries\Encryption;
 use App\Libraries\JavaConf;
 use App\Libraries\RabbitMq;
 use App\Libraries\WenBaRedis;
@@ -69,8 +69,8 @@ class CommonProvider extends ServiceProvider
         /**
          * 加密解密算法
          */
-        $this->app->singleton('Encrypt',function(){
-            return new Encrypt();
+        $this->app->singleton('Encryption',function(){
+            return new Encryption();
         });
     }
 

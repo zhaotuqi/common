@@ -6,8 +6,7 @@
 
 namespace App\Libraries;
 
-
-class Encrypt
+class Encryption
 {
     private static $iv;
     private static $cipher;
@@ -23,7 +22,7 @@ class Encrypt
      * @date   2019-06-04
      */
 
-    public static function encryptsec($data,$key,$iv = '')
+    public static function encrypt($data,$key,$iv = '')
     {
         if (empty($key)) {
             throw new \Exception("key不能为空");
@@ -45,7 +44,7 @@ class Encrypt
      * @author shiyao.niu@wenba100.com
      * @date   2019-06-04
      */
-    public static function decryptsec($encrypt,$key)
+    public static function decrypt($encrypt,$key)
     {
         if (empty($key)) {
             throw new \Exception("key不能为空");
