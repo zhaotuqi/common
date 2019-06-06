@@ -27,10 +27,23 @@ class JavaConf
         return $javaConfigPlatformUrl;
     }
 
-    private function getEnv(){
-        if(in_array(strtolower(env('REDIS_CMS_ENV','pro')),['pro','pre'])){
+    /**
+     * 获取java配置平台环境
+     * @param $configKey
+     * @return string
+     */
+    private function getEnv($configKey){
+        if('pre' == strtolower(env('REDIS_CMS_ENV','pro')))
+        {
+            $configId = config("javaconf.pre.".$configKey);
+            if(!empty($configId)){
+                return 'pre';
+            }
+            return 'pro';
+        }elseif ('pro' == strtolower(env('REDIS_CMS_ENV','pro'))){
             return 'pro';
         }
+
         return 'dev';
     }
 
@@ -274,7 +287,7 @@ class JavaConf
      * @return mixed
      */
     public function fetchConfig($configKey,$keys,$defVal = false){
-        $configId = config("javaconf.".$this->getEnv().'.'.$configKey);
+        $configId = config("javaconf.".$this->getEnv($configKey).'.'.$configKey);
         static $configIdList = [];
         list($pre,$k,$k2) = explode('.',$keys);
         if(!isset($configIdList[$configId])){
@@ -304,7 +317,7 @@ class JavaConf
     public function addItem($configKey, $itemName, $itemDesc)
     {
         $url        = $this->getUrl() . 'config/item/add';
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $tableList  = $this->fetchTableInfo($configId);
         $startTime  = microtime(true);
 
@@ -345,7 +358,7 @@ class JavaConf
      */
     public function getItemList($configKey)
     {
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $tableList  = $this->fetchTableInfo($configId);
         return $tableList;
     }
@@ -359,7 +372,7 @@ class JavaConf
     public function addContent($configKey, $info)
     {
         $url        = $this->getUrl() . 'config/data/add';
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $tableList  = $this->fetchTableInfo($configId);
         $startTime  = microtime(true);
 
@@ -401,7 +414,7 @@ class JavaConf
     public function editContent($configKey, $recordId, $info)
     {
         $url        = $this->getUrl() . 'config/data/change';
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $tableList  = $this->fetchTableInfo($configId);
         $startTime  = microtime(true);
 
@@ -445,7 +458,7 @@ class JavaConf
     public function delContent($configKey, $recordId)
     {
         $url        = $this->getUrl() . 'config/data/del';
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $startTime  = microtime(true);
 
         try{
@@ -479,7 +492,7 @@ class JavaConf
      */
     public function getContentList($configKey)
     {
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $list = $this->fetchItemList($configId);
         if ($list === false) {
             $list = json_decode(app('wredis')->get(sprintf("javaconf:%d:list", $configId)), true);
@@ -500,7 +513,7 @@ class JavaConf
      */
     public function getContent($configKey, $recordId)
     {
-        $configId   = config("javaconf." . $this->getEnv() . '.' . $configKey);
+        $configId   = config("javaconf." . $this->getEnv($configKey) . '.' . $configKey);
         $info       = $this->fetchItemInfo($configId, [$recordId]);
         if ($info === false) {
             $info = json_decode(app('wredis')->get(sprintf("javaconf:%d:list", $configId)), true);
