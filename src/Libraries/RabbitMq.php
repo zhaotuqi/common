@@ -162,26 +162,26 @@ class RabbitMq
 
         //检查rabbitmq连接配置项
         $check_config_msg = "";
-        $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
-        $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
-        $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
-        $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_VHOST_JSPT"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_VHOST_JSPT"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
 
         if (!empty($check_config_msg)) {
             throw new \Exception(PHP_EOL . $check_config_msg);
         }
 
         $con = new AMQPStreamConnection(
-            $rabbitmqConfig['RABBITMQ_HOST'],
-            $rabbitmqConfig['RABBITMQ_PORT'],
-            $rabbitmqConfig['RABBITMQ_USER'],
-            $rabbitmqConfig['RABBITMQ_PASSWORD'],
-            $rabbitmqConfig['RABBITMQ_VHOST_JSPT'],
-            $rabbitmqConfig['RABBITMQ_INSIST'],
-            $rabbitmqConfig['RABBITMQ_LOGIN_METHOD'],
-            $rabbitmqConfig['RABBITMQ_LOGIN_RESPONSE'],
-            $rabbitmqConfig['RABBITMQ_LOCALE'],
-            $rabbitmqConfig['RABBITMQ_CONNECTION_TIMEOUT']
+            $checkArray['RABBITMQ_HOST'],
+            $checkArray['RABBITMQ_PORT'],
+            $checkArray['RABBITMQ_USER'],
+            $checkArray['RABBITMQ_PASSWORD'],
+            $checkArray['RABBITMQ_VHOST_JSPT'],
+            $checkArray['RABBITMQ_INSIST'],
+            $checkArray['RABBITMQ_LOGIN_METHOD'],
+            $checkArray['RABBITMQ_LOGIN_RESPONSE'],
+            $checkArray['RABBITMQ_LOCALE'],
+            $checkArray['RABBITMQ_CONNECTION_TIMEOUT']
         );
 
         return $con;
