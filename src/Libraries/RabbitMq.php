@@ -95,7 +95,7 @@ class RabbitMq
                     dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
                 });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
-                $amqMsg = new AMQPMessage($msg);
+                $amqMsg = new AMQPMessage($msg, ['delivery' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
                 $ret = $channel->basic_publish($amqMsg, $exchange);
                 $channel->wait_for_pending_acks(3);
                 $channel->close();
