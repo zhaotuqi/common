@@ -176,7 +176,7 @@ class RabbitMq
             $rabbitmqConfig['RABBITMQ_PORT'],
             $rabbitmqConfig['RABBITMQ_USER'],
             $rabbitmqConfig['RABBITMQ_PASSWORD'],
-            $rabbitmqConfig['RABBITMQ_VHOST'],
+            $rabbitmqConfig['RABBITMQ_VHOST_JSPT'],
             $rabbitmqConfig['RABBITMQ_INSIST'],
             $rabbitmqConfig['RABBITMQ_LOGIN_METHOD'],
             $rabbitmqConfig['RABBITMQ_LOGIN_RESPONSE'],
