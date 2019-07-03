@@ -1082,13 +1082,11 @@ class Common
      */
     public function getServiceInfo()
     {
-        $envArr = ['qa' => '测试环境', 'pre' => '预发环境', "pro" => '线上环境'];
-
         $data = [];
-        $data['serviceName'] = env("APP_NAME") ?? '';
-        $data['serverIp'] = $_SERVER['SERVER_ADDR'] ?? '';
+        $data['name'] = env("APP_NAME") ?? '';
+        $data['ip'] = $_SERVER['SERVER_ADDR'] ?? '';
         $data['port'] = Request::getPort() ?? '';
-        $data['publishEnv'] = $envArr[env("APP_ENV")] ?? '';
+        $data['env'] = env("APP_ENV") ?? '';
         return $data;
     }
 }
