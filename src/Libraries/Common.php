@@ -1078,6 +1078,7 @@ class Common
     /**
      * 获取服务环境信息
      * @return array
+     * @author shiyao.niu@wenba100.com
      */
     public function getServiceInfo()
     {
