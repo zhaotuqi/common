@@ -1074,4 +1074,20 @@ class Common
 
         return (string)sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
     }
+
+    /**
+     * 获取服务环境信息
+     * @return array
+     */
+    public function getServiceInfo()
+    {
+        $envArr = ['qa' => '测试环境', 'pre' => '预发环境', "pro" => '线上环境'];
+
+        $data = [];
+        $data['serviceName'] = env("APP_NAME") ?? '';
+        $data['serverIp'] = $_SERVER['SERVER_ADDR'] ?? '';
+        $data['port'] = Request::getPort() ?? '';
+        $data['publishEnv'] = $envArr[env("APP_ENV")] ?? '';
+        return $data;
+    }
 }
