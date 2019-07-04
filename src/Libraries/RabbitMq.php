@@ -24,10 +24,16 @@ class RabbitMq
         if ($con === false || $con->isConnected() === false) {
 
             $rabbitmqConfig = [
-                "RABBITMQ_HOST" => env('RABBITMQ_HOST'),
-                "RABBITMQ_PORT" => env('RABBITMQ_PORT'),
-                "RABBITMQ_USER" => env('RABBITMQ_USER'),
-                "RABBITMQ_PASSWORD" => env('RABBITMQ_PASSWORD')
+                "RABBITMQ_HOST"                 => env('RABBITMQ_HOST'),
+                "RABBITMQ_PORT"                 => env('RABBITMQ_PORT'),
+                "RABBITMQ_USER"                 => env('RABBITMQ_USER'),
+                "RABBITMQ_PASSWORD"             => env('RABBITMQ_PASSWORD'),
+                'RABBITMQ_VHOST'                => '/',
+                'RABBITMQ_INSIST'               => false,
+                'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
+                'RABBITMQ_LOGIN_RESPONSE'       => null,
+                'RABBITMQ_LOCALE'               => 'en_US',
+                'RABBITMQ_CONNECTION_TIMEOUT'   => 10.0
             ];
             //检查rabbitmq连接配置项
             $check_config_msg = "";
@@ -44,7 +50,13 @@ class RabbitMq
                 $rabbitmqConfig['RABBITMQ_HOST'],
                 $rabbitmqConfig['RABBITMQ_PORT'],
                 $rabbitmqConfig['RABBITMQ_USER'],
-                $rabbitmqConfig['RABBITMQ_PASSWORD']
+                $rabbitmqConfig['RABBITMQ_PASSWORD'],
+                $rabbitmqConfig['RABBITMQ_VHOST'],
+                $rabbitmqConfig['RABBITMQ_INSIST'],
+                $rabbitmqConfig['RABBITMQ_LOGIN_METHOD'],
+                $rabbitmqConfig['RABBITMQ_LOGIN_RESPONSE'],
+                $rabbitmqConfig['RABBITMQ_LOCALE'],
+                $rabbitmqConfig['RABBITMQ_CONNECTION_TIMEOUT']
             );
         }
 
@@ -83,7 +95,7 @@ class RabbitMq
                     dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
                 });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
-                $amqMsg = new AMQPMessage($msg);
+                $amqMsg = new AMQPMessage($msg, ['delivery' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
                 $ret = $channel->basic_publish($amqMsg, $exchange);
                 $channel->wait_for_pending_acks(3);
                 $channel->close();
@@ -136,25 +148,40 @@ class RabbitMq
     private function __checkConnection()
     {
         $checkArray = [
-            'RABBITMQ_HOST'        => env('RABBITMQ_HOST',''),
-            'RABBITMQ_PORT'        => env('RABBITMQ_PORT',''),
-            'RABBITMQ_USER'        => env('RABBITMQ_USER',''),
-            'RABBITMQ_PASSWORD'    => env('RABBITMQ_PASSWORD',''),
-            'RABBITMQ_VHOST_JSPT'  => env('RABBITMQ_VHOST_JSPT','')
+            'RABBITMQ_HOST'                 => env('RABBITMQ_HOST'),
+            'RABBITMQ_PORT'                 => env('RABBITMQ_PORT'),
+            'RABBITMQ_USER'                 => env('RABBITMQ_USER'),
+            'RABBITMQ_PASSWORD'             => env('RABBITMQ_PASSWORD'),
+            'RABBITMQ_VHOST_JSPT'           => env('RABBITMQ_VHOST_JSPT'),
+            'RABBITMQ_INSIST'               => false,
+            'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
+            'RABBITMQ_LOGIN_RESPONSE'       => null,
+            'RABBITMQ_LOCALE'               => 'en_US',
+            'RABBITMQ_CONNECTION_TIMEOUT'   => 10.0
         ];
 
-        foreach ($checkArray as $key => $value) {
-            if (empty($value)) {
-                throw new \Exception('connect java rabbitMq error : env config'.$key.'can not empty!');
-            }
+        //检查rabbitmq连接配置项
+        $check_config_msg = "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
+        $check_config_msg .= empty($checkArray["RABBITMQ_VHOST_JSPT"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
+
+        if (!empty($check_config_msg)) {
+            throw new \Exception(PHP_EOL . $check_config_msg);
         }
 
         $con = new AMQPStreamConnection(
-            env('RABBITMQ_HOST'),
-            env('RABBITMQ_PORT'),
-            env('RABBITMQ_USER'),
-            env('RABBITMQ_PASSWORD'),
-            env('RABBITMQ_VHOST_JSPT')
+            $checkArray['RABBITMQ_HOST'],
+            $checkArray['RABBITMQ_PORT'],
+            $checkArray['RABBITMQ_USER'],
+            $checkArray['RABBITMQ_PASSWORD'],
+            $checkArray['RABBITMQ_VHOST_JSPT'],
+            $checkArray['RABBITMQ_INSIST'],
+            $checkArray['RABBITMQ_LOGIN_METHOD'],
+            $checkArray['RABBITMQ_LOGIN_RESPONSE'],
+            $checkArray['RABBITMQ_LOCALE'],
+            $checkArray['RABBITMQ_CONNECTION_TIMEOUT']
         );
 
         return $con;
