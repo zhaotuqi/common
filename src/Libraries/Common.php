@@ -1084,8 +1084,8 @@ class Common
     {
         $data = [];
         $data['name'] = env("APP_NAME") ?? '';
-        $data['ip'] = $_SERVER['SERVER_ADDR'] ?? '';
-        $data['port'] = Request::getPort() ?? '';
+        $data['ip'] = \request()->getClientIp() ?? '';
+        $data['port'] = \request()->getPort() ?? '';
         $data['env'] = env("APP_ENV") ?? '';
         return $data;
     }
