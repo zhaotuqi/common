@@ -1074,4 +1074,19 @@ class Common
 
         return (string)sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
     }
+
+    /**
+     * 获取服务环境信息
+     * @return array
+     * @author shiyao.niu@wenba100.com
+     */
+    public function getServiceInfo()
+    {
+        $data = [];
+        $data['name'] = env("APP_NAME") ?? '';
+        $data['ip'] = \request()->getClientIp() ?? '';
+        $data['port'] = \request()->getPort() ?? '';
+        $data['env'] = env("APP_ENV") ?? '';
+        return $data;
+    }
 }
