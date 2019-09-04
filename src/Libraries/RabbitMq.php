@@ -33,7 +33,7 @@ class RabbitMq
                 'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
                 'RABBITMQ_LOGIN_RESPONSE'       => null,
                 'RABBITMQ_LOCALE'               => 'en_US',
-                'RABBITMQ_CONNECTION_TIMEOUT'   => 10.0
+                'RABBITMQ_CONNECTION_TIMEOUT'   => 3.0
             ];
             //检查rabbitmq连接配置项
             $check_config_msg = "";
@@ -70,8 +70,23 @@ class RabbitMq
         $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmq.log', config('app.log_max_files'));
         $log->pushHandler($handle);
         $log->log($level, sprintf('%s -> %s',$exchange,$msg));
-
     }
+
+    /**
+     * @param $time
+     * @param $exchange
+     * @param int $level
+     * 记录RabbitMQ连接&发送时间
+     */
+    private function logger_time($time,$exchange,$level = Logger::INFO)
+    {
+        $appName = config('app.app_name');
+        $log    = new Logger($appName);
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmq_time.log', config('app.log_max_files'));
+        $log->pushHandler($handle);
+        $log->log($level, sprintf('%s -> %s', $time, $exchange));
+    }
+
     /**
      * 发送消息
      * @author hongfei.geng<hongfei.geng@wenba100.com>
@@ -83,6 +98,7 @@ class RabbitMq
         $ret = false;
         $this->logger($exchange,$msg);
         try{
+            $startTime = microtime(true);
             $con = $this->getCon();
             if($con) {
                 $channel = $con->channel();
@@ -107,6 +123,10 @@ class RabbitMq
                 $this->logger($exchange,$msg.' ： 链接断开',Logger::WARNING);
                 throw new \Exception("链接RabbitMq失败");
             }
+
+            $endTime = microtime(true);
+            $time = $endTime - $startTime;
+            $this->logger_time($time . "=" . $endTime . "-" . $startTime, $exchange);
         }catch (\Exception $e){
             dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
         }
@@ -157,7 +177,7 @@ class RabbitMq
             'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
             'RABBITMQ_LOGIN_RESPONSE'       => null,
             'RABBITMQ_LOCALE'               => 'en_US',
-            'RABBITMQ_CONNECTION_TIMEOUT'   => 10.0
+            'RABBITMQ_CONNECTION_TIMEOUT'   => 3.0
         ];
 
         //检查rabbitmq连接配置项
@@ -196,6 +216,7 @@ class RabbitMq
      */
     public function sendQueueToJSPT($exchange, $msg)
     {
+        $startTime = microtime(true);
         $con = $this->__checkConnection();
 
         try {
@@ -217,6 +238,9 @@ class RabbitMq
             // 关闭频道
             $channel->close();
 
+            $endTime = microtime(true);
+            $time = $endTime - $startTime;
+            $this->logger_time($time . "=" . $endTime . "-" . $startTime, $exchange);
         }catch (\Exception $e) {
 
             dispatch((new RabbitMqJSPTJob($exchange, $msg))->delay(60));
