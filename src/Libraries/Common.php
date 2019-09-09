@@ -1089,4 +1089,55 @@ class Common
         $data['env'] = env("APP_ENV") ?? '';
         return $data;
     }
+
+    /**
+     * @param $requestUrl
+     * @param string $method
+     * @param $param
+     * @return mixed
+     */
+    public function requestByMethod($requestUrl, $method='GET', $param)
+    {
+        $headers    = ['Content-Type' => 'application/x-www-form-urlencoded'];
+        $headers    = $this->defaultHeader($headers);
+        $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
+        $requestUrl = $this->addXdebugParams($requestUrl);
+        try {
+            $i = 0;
+            postRequest:
+            $req = $httpClient->request($method, $requestUrl, ['body' => $param, 'verify' => false, 'headers' => $headers]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            if ($i < 5) {
+                $i++;
+                goto postRequest;
+            } else {
+                throw $e;
+            }
+        }
+
+        $message = [
+            'response_time'  => microtime(true) - $startTime,
+            'request_uri'    => $requestUrl,
+            'request_type'  => $method,
+            'request_header' => $headers,
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
+        ];
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog.log',
+            $message,
+            Logger::INFO
+        );
+
+        return $result;
+    }
 }
