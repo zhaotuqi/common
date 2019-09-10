@@ -1095,21 +1095,22 @@ class Common
      * @param string $method
      * @param $param
      * @return mixed
-     * @todo 
+     * @todo
      */
-    public function requestByMethod($requestUrl, $method='GET', $param,$headers=[])
+    public function requestByMethod($requestUrl, $param, $method = 'GET', $headers = [])
     {
-        $headers    = $this->defaultHeader($headers);
+        $headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
-        $startTime  = microtime(true);
+        $startTime = microtime(true);
         $requestUrl = $this->addXdebugParams($requestUrl);
         try {
             $i = 0;
             postRequest:
-            $req = $httpClient->request($method, $requestUrl, ['body' => $param, 'verify' => false, 'headers' => $headers]);
+            $req = $httpClient->request($method, $requestUrl,
+                ['body' => $param, 'verify' => false, 'headers' => $headers]);
 
             //打点falcon中的次数，请求时长，错误
-            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+            self::requestToFalcon($requestUrl, (microtime(true) - $startTime) * 1000, $req->getStatusCode());
 
             $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
@@ -1122,12 +1123,12 @@ class Common
         }
 
         $message = [
-            'response_time'  => microtime(true) - $startTime,
-            'request_uri'    => $requestUrl,
-            'request_type'  => $method,
+            'response_time' => microtime(true) - $startTime,
+            'request_uri' => $requestUrl,
+            'request_type' => $method,
             'request_header' => $headers,
-            'request_body'   => $this->logReduce($param),
-            'response_body'  => $this->logReduce($result)
+            'request_body' => $this->logReduce($param),
+            'response_body' => $this->logReduce($result)
         ];
 
         //记录log
