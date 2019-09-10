@@ -1095,10 +1095,10 @@ class Common
      * @param string $method
      * @param $param
      * @return mixed
+     * @todo 
      */
-    public function requestByMethod($requestUrl, $method='GET', $param)
+    public function requestByMethod($requestUrl, $method='GET', $param,$headers=[])
     {
-        $headers    = ['Content-Type' => 'application/x-www-form-urlencoded'];
         $headers    = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
