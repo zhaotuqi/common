@@ -1092,12 +1092,12 @@ class Common
 
     /**
      * @param $requestUrl
-     * @param string $method
+     * @param string $method POST,PUT,DELETE
      * @param $param
      * @return mixed
      * @todo
      */
-    public function requestByMethod($requestUrl, $param, $method = 'GET', $headers = [])
+    public function requestMethodByJson($requestUrl, $param, $method = 'POST', $headers = [])
     {
         $headers = $this->defaultHeader($headers);
         $httpClient = app('HttpClient');
@@ -1105,9 +1105,8 @@ class Common
         $requestUrl = $this->addXdebugParams($requestUrl);
         try {
             $i = 0;
-            postRequest:
-            $req = $httpClient->request($method, $requestUrl,
-                ['body' => $param, 'verify' => false, 'headers' => $headers]);
+            requestMethodByJson:
+            $req = $httpClient->request($method, $requestUrl, ['json' => $param, 'verify' => false, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
 
             //打点falcon中的次数，请求时长，错误
             self::requestToFalcon($requestUrl, (microtime(true) - $startTime) * 1000, $req->getStatusCode());
@@ -1116,7 +1115,7 @@ class Common
         } catch (RuntimeException $e) {
             if ($i < 5) {
                 $i++;
-                goto postRequest;
+                goto requestMethodByJson;
             } else {
                 throw $e;
             }
