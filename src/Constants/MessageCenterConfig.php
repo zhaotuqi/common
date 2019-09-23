@@ -69,6 +69,14 @@ class MessageCenterConfig
 
 
     /**
+     * 线索推荐成功事件
+     *
+     * @var integer
+     */
+    const EVENT_CLUE_RECOMMEND_SUCCESS = 203;
+
+
+    /**
      * 测评课排课成功
      *
      * @var integer
