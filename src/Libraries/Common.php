@@ -1154,6 +1154,7 @@ class Common
         $httpClient = app('HttpClient');
         $startTime  = microtime(true);
         $requestUrl = $this->addXdebugParams($requestUrl);
+        $errormsg   = '';
         try {
             $req = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
 
@@ -1170,7 +1171,7 @@ class Common
             'request_uri'    => $requestUrl,
             'request_header' => $headers,
             'request_body'   => $this->logReduce($param),
-            'response_body'  => $this->logReduce($errormsg)
+            'response_body'  => $this->logReduce(!empty($errormsg) ? $errormsg : $result)
         ];
 
         //记录log
