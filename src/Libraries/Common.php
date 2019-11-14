@@ -1162,7 +1162,7 @@ class Common
 
             $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
-            $errormsg = $e;
+            $errormsg = $e->getMessage();
         }
 
         $message = [
