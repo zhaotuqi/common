@@ -1141,7 +1141,7 @@ class Common
         return $result;
     }
 
-    /*
+    /**
      * @param $requestUrl
      * @param $param
      * @param array $headers
