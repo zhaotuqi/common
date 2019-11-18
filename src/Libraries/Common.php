@@ -263,7 +263,7 @@ class Common
             }
             //打点请求时长
             \Monitor\Client::cost(sprintf("%s,h=%s,t=api_cost",$url,$host),$costMs);
-            
+
         }catch (Exception $e){
             Log::info('记录Falcon失败',$e->getMessage());
         }
@@ -1056,7 +1056,7 @@ class Common
     public static function filterSpecialChars($chars,$encoding='utf8')
     {
         if(empty($chars)) return '';
-        
+
         $pattern =($encoding=='utf8')?'/[\x{4e00}-\x{9fa5}a-zA-Z0-9_]/u':'/[\x80-\xFF]/';
         preg_match_all($pattern,$chars,$result);
         $temp =join('',$result[0]);
@@ -1141,6 +1141,50 @@ class Common
         return $result;
     }
 
+    /*
+     * @param $requestUrl
+     * @param $param
+     * @param array $headers
+     * @return mixed
+     * 去掉补偿机制，只请求一次
+     */
+    public function noRepeatRequest($requestUrl, $param, $headers = [])
+    {
+        $headers    = $this->defaultHeader($headers);
+        $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
+        $requestUrl = $this->addXdebugParams($requestUrl);
+        $errormsg   = '';
+        try {
+            $req = $httpClient->request('POST', $requestUrl, ['form_params' => $param, 'headers' => $headers, 'timeout' => 30, 'connect_timeout' => 30]);
+
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl, (microtime(true) - $startTime) * 1000, $req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            $errormsg = $e->getMessage();
+        }
+
+        $message = [
+            'response_time'  => microtime(true) - $startTime,
+            'request_uri'    => $requestUrl,
+            'request_header' => $headers,
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce(!empty($errormsg) ? $errormsg : $result)
+        ];
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog.log',
+            $message,
+            Logger::INFO
+        );
+
+        return $result;
+    }
+
     /**
      * 注册docker服务
      * @return array
@@ -1150,7 +1194,7 @@ class Common
         $data = [];
         $url = '';
         $ret = '';
-        $data['name'] = env("APP_NAME") ?? '';
+        $data['name'] = config('app.app_name') ?? '';
         $data['ip'] = \request()->server('SERVER_ADDR') ?? '';
         $data['port'] = \request()->getPort() ?? '';
         $data['env'] = env("APP_ENV") ?? '';
