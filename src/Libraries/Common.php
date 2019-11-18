@@ -1184,4 +1184,44 @@ class Common
 
         return $result;
     }
+
+    /**
+     * 注册docker服务
+     * @return array
+     */
+    public function registerDockerService()
+    {
+        $data = [];
+        $url = '';
+        $ret = '';
+        $data['name'] = config('app.app_name') ?? '';
+        $data['ip'] = \request()->server('SERVER_ADDR') ?? '';
+        $data['port'] = \request()->getPort() ?? '';
+        $data['env'] = env("APP_ENV") ?? '';
+
+        //根据ip.json获取信息
+        $path = "/data/config/ip.json";
+        if (file_exists($path)) {
+            $content = file_get_contents($path);
+            $content = json_decode($content, true);
+            if (!empty($content)) {
+                $data['ip'] = $content['address'] ?? '';
+                $data['port'] = $content['port'] ?? '';
+            }
+        }
+        $env = env('APP_ENV');
+        if (in_array($env, ['qa', 'testing'])) {
+            $url = config('common_config.java_api_url.testing');
+        } elseif (in_array($env, ['staging', 'pre', 'preview'])) {
+            $url = config('common_config.java_api_url.staging');
+        } elseif (in_array($env, ['production', 'pro'])) {
+            $url = config('common_config.java_api_url.production');
+        }
+        if (!empty($url)) {
+            $url = $url . "/instance/register";
+            $ret = curlJson($url, $data);
+        }
+
+        return $ret;
+    }
 }
