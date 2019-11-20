@@ -1207,6 +1207,7 @@ class Common
             if (!empty($content)) {
                 $data['ip'] = $content['address'] ?? '';
                 $data['port'] = $content['port'] ?? '';
+                $data['env'] = $content['env'] ?? '';
             }
         }
         $env = env('APP_ENV');
