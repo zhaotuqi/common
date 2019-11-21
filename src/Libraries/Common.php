@@ -285,7 +285,7 @@ class Common
 
     public function isPhoneNo($phoneNo)
     {
-        return preg_match('/^1[3|4|5|7|8]\d{9}$/', $phoneNo) ? true : false;
+        return preg_match('/^1[3|4|5|6|7|8|9]\d{9}$/', $phoneNo) ? true : false;
     }
 
     /**
