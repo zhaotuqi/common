@@ -8,6 +8,7 @@
 
 namespace App\Libraries;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Monolog\Logger;
@@ -1186,43 +1187,39 @@ class Common
     }
 
     /**
-     * 注册docker服务
-     * @return array
+     * 获取配置平台信息
+     * @param $serviceName string
+     * @param $env integer  dev:1;test:2;pre:3;prod:4
+     *
+     * @return mixed
      */
-    public function registerDockerService()
+    public function getConfigPlatformInfo($serviceName, $env)
     {
-        $data = [];
-        $url = '';
-        $ret = '';
-        $data['name'] = config('app.app_name') ?? '';
-        $data['ip'] = \request()->server('SERVER_ADDR') ?? '';
-        $data['port'] = \request()->getPort() ?? '';
-        $data['env'] = env("APP_ENV") ?? '';
-
-        //根据ip.json获取信息
-        $path = "/data/config/ip.json";
-        if (file_exists($path)) {
-            $content = file_get_contents($path);
-            $content = json_decode($content, true);
-            if (!empty($content)) {
-                $data['ip'] = $content['address'] ?? '';
-                $data['port'] = $content['port'] ?? '';
-                $data['env'] = $content['env'] ?? '';
+        //文件缓存开关
+        $isOpen = config('common_config.open_config_platform_file_cache');
+        //文件key
+        $fileKey = $serviceName.'_'.$env;
+        //获取缓存的配置信息 如果不存在，去Java直接获取，反之，直接返回
+        $info = Cache::get($fileKey);
+        if ($info === null || $isOpen) {
+            $url = config('common_config.config_platform_url');
+            $param = [
+                'serviceName'   => $serviceName,
+                'env'           => $env
+            ];
+            try {
+                $response = $this->query($url, $param);
+            } catch (Exception $e) {
+                Log::info('请求Java配置平台接口失败', $e->getMessage());
             }
-        }
-        $env = env('APP_ENV');
-        if (in_array($env, ['qa', 'testing'])) {
-            $url = config('common_config.java_api_url.testing');
-        } elseif (in_array($env, ['staging', 'pre', 'preview'])) {
-            $url = config('common_config.java_api_url.staging');
-        } elseif (in_array($env, ['production', 'pro'])) {
-            $url = config('common_config.java_api_url.production');
-        }
-        if (!empty($url)) {
-            $url = $url . "/instance/register";
-            $ret = curlJson($url, $data);
+            $response = json_decode($response, true);
+            if (empty($response['data'])) {
+                Log::info('相关配置信息不存在', $e->getMessage());
+            }
+            $info = $response['data'];
+            Cache::put($fileKey, $info, 5);
         }
 
-        return $ret;
+        return $info;
     }
 }
