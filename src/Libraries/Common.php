@@ -8,7 +8,6 @@
 
 namespace App\Libraries;
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Monolog\Logger;
