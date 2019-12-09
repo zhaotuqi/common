@@ -1207,7 +1207,7 @@ class Common
 
             $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
-            if ($i < 2) {
+            if ($i < 1) {
                 $i++;
                 goto query;
             } else {
