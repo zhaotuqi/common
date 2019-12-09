@@ -76,15 +76,17 @@ class JavaConf
                     $this->falconInc("JavaConf:Error:GetMap:DataEmpty,t=JavaConf");
                     return [];
                 }
-                Cache::forever($fileCacheKey, $items);
+                $tmpItems = array_column($items,'item_name','item_id');
+                Cache::forever($fileCacheKey, $tmpItems);
+                $items = $tmpItems;
             }
-            return array_column($items,'item_name','item_id');
+            return $items;
         }catch (\Exception $e){
             $this->falconInc("JavaConf:Error:GetMap:Exception,t=JavaConf");
             $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
             //增加异常捕获后，改从文件缓存读取
             $items = Cache::get($fileCacheKey);
-            return $items ? array_column($items,'item_name','item_id') : [];
+            return $items ?? [];
         }
         return [];
     }
@@ -250,15 +252,17 @@ class JavaConf
                     $this->falconInc("JavaConf:Error:fetchRecordInfo:DataEmpty,t=JavaConf");
                     return [];
                 }
-                Cache::forever($fileCacheKey, $items);
+                $tmpItems = array_column($items, null, 'record_id');
+                Cache::forever($fileCacheKey, $tmpItems);
+                $items = $tmpItems;
             }
-            return array_column($items, null, 'record_id');
+            return $items;
         }catch (\Exception $e){
             $this->falconInc('JavaConf:Error:fetchRecordInfo:Exception,t=JavaConf');
             $this->falconCos("JavaConf:ReqTime:fetchRecordInfo,t=JavaConf",$startTime);
             //增加异常捕获后，改从文件缓存读取
             $items = Cache::get($fileCacheKey);
-            return $items ? array_column($items, null, 'record_id') : [];
+            return $items ?? [];
         }
         return [];
     }
