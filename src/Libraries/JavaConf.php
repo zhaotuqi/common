@@ -121,7 +121,7 @@ class JavaConf
         $startTime  = microtime(true);
         $fileCacheKey = 'file_cache_'.$configId;
         //是否开启文件缓存
-        $isOpen = config('common_config.open_config_platform_file_cache');
+        $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
             if ($isOpen && Cache::has($fileCacheKey)) {
                 $items = Cache::get($fileCacheKey);
@@ -220,7 +220,7 @@ class JavaConf
         $startTime  = microtime(true);
         $fileCacheKey = 'file_cache_'.$configId.'_'.$recordId;
         //是否开启文件缓存
-        $isOpen = config('common_config.open_config_platform_file_cache');
+        $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
             if ($isOpen && Cache::has($fileCacheKey)) {
                 $items = Cache::get($fileCacheKey);
