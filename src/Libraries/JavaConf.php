@@ -84,7 +84,7 @@ class JavaConf
             $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
             //增加异常捕获后，改从文件缓存读取
             $items = Cache::get($fileCacheKey);
-            return array_column($items,'item_name','item_id');
+            return $items ? array_column($items,'item_name','item_id') : [];
         }
         return [];
     }
@@ -157,7 +157,7 @@ class JavaConf
             $this->falconCos("JavaConf:ReqTime:GetConf,t=JavaConf",$startTime);
             //增加异常捕获后，改从文件缓存读取
             $items = Cache::get($fileCacheKey);
-            return $items;
+            return $items ?? [];
         }
         return [];
     }
@@ -258,7 +258,7 @@ class JavaConf
             $this->falconCos("JavaConf:ReqTime:fetchRecordInfo,t=JavaConf",$startTime);
             //增加异常捕获后，改从文件缓存读取
             $items = Cache::get($fileCacheKey);
-            return array_column($items, null, 'record_id');
+            return $items ? array_column($items, null, 'record_id') : [];
         }
         return [];
     }
