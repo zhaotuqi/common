@@ -1200,7 +1200,7 @@ class Common
         try {
             $i = 0;
             query:
-            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 10, 'connect_timeout' => 10]);
+            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 5, 'connect_timeout' => 5]);
 
             //打点falcon中的次数，请求时长，错误
             self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
