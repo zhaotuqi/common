@@ -1200,14 +1200,14 @@ class Common
         try {
             $i = 0;
             query:
-            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 5, 'connect_timeout' => 5]);
+            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3]);
 
             //打点falcon中的次数，请求时长，错误
             self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
 
             $result = $req->getBody()->getContents();
         } catch (RuntimeException $e) {
-            if ($i < 3) {
+            if ($i < 2) {
                 $i++;
                 goto query;
             } else {
