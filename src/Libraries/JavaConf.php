@@ -60,7 +60,7 @@ class JavaConf
     private function fetchTableInfo($configId){
         $url = $this->getUrl().'config/group/get';
         $startTime  = microtime(true);
-        $fileCacheKey = 'file_cache_'.$configId;
+        $fileCacheKey = 'file_cache_get_'.$configId;
         //是否开启文件缓存
         $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
@@ -129,7 +129,7 @@ class JavaConf
     private function fetchConfInfo($configId){
         $url = $this->getUrl().'config/data/page';
         $startTime  = microtime(true);
-        $fileCacheKey = 'file_cache_'.$configId;
+        $fileCacheKey = 'file_cache_page_'.$configId;
         //是否开启文件缓存
         $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
