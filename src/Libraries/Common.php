@@ -1185,41 +1185,4 @@ class Common
 
         return $result;
     }
-
-    /**
-     * 获取配置平台信息
-     * @param $serviceName string
-     * @param $env integer  dev:1;test:2;pre:3;prod:4
-     *
-     * @return mixed
-     */
-    public function getConfigPlatformInfo($serviceName, $env)
-    {
-        //文件缓存开关
-        $isOpen = config('common_config.open_config_platform_file_cache');
-        //文件key
-        $fileKey = $serviceName.'_'.$env;
-        //获取缓存的配置信息 如果不存在，去Java直接获取，反之，直接返回
-        $info = Cache::get($fileKey);
-        if ($info === null || $isOpen) {
-            $url = config('common_config.config_platform_url');
-            $param = [
-                'serviceName'   => $serviceName,
-                'env'           => $env
-            ];
-            try {
-                $response = $this->query($url, $param);
-            } catch (Exception $e) {
-                Log::info('请求Java配置平台接口失败', $e->getMessage());
-            }
-            $response = json_decode($response, true);
-            if (empty($response['data'])) {
-                Log::info('相关配置信息不存在', $e->getMessage());
-            }
-            $info = $response['data'];
-            Cache::put($fileKey, $info, 5);
-        }
-
-        return $info;
-    }
 }
