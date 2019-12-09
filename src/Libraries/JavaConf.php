@@ -60,16 +60,23 @@ class JavaConf
     private function fetchTableInfo($configId){
         $url = $this->getUrl().'config/group/get';
         $startTime  = microtime(true);
+        $fileCacheKey = 'file_cache_'.$configId;
+        //是否开启文件缓存
+        $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
-
-            $response = app('Common')->query($url,['config_id' => $configId]);
-            $this->falconInc("JavaConf:Error:GetMap:Req,t=JavaConf");
-            $jsonData = json_decode($response,true);
-            $items = array_get($jsonData,'items',[]);
-            $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
-            if(empty($items)){
-                $this->falconInc("JavaConf:Error:GetMap:DataEmpty,t=JavaConf");
-                return [];
+            if ($isOpen && Cache::has($fileCacheKey)) {
+                $items = Cache::get($fileCacheKey);
+            } else {
+                $response = app('Common')->getConfigQuery($url,['config_id' => $configId]);
+                $this->falconInc("JavaConf:Error:GetMap:Req,t=JavaConf");
+                $jsonData = json_decode($response,true);
+                $items = array_get($jsonData,'items',[]);
+                $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
+                if(empty($items)){
+                    $this->falconInc("JavaConf:Error:GetMap:DataEmpty,t=JavaConf");
+                    return [];
+                }
+                Cache::forever($fileCacheKey, $items);
             }
             return array_column($items,'item_name','item_id');
         }catch (\Exception $e){
@@ -126,7 +133,7 @@ class JavaConf
             if ($isOpen && Cache::has($fileCacheKey)) {
                 $items = Cache::get($fileCacheKey);
             } else {
-                $response = app('Common')->query($url,[
+                $response = app('Common')->getConfigQuery($url,[
                     'config_id' => $configId,
                     'page' => 1,
                     'page_size' => 999
@@ -225,7 +232,7 @@ class JavaConf
             if ($isOpen && Cache::has($fileCacheKey)) {
                 $items = Cache::get($fileCacheKey);
             } else {
-                $response = app('Common')->query($url,[
+                $response = app('Common')->getConfigQuery($url,[
                     'config_id'     => $configId,
                     'record_ids'    => implode(',', $recordId),
                 ]);
