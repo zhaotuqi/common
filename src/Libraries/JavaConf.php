@@ -233,7 +233,7 @@ class JavaConf
     private function fetchRecordInfo($configId, $recordId){
         $url = $this->getUrl().'config/data/get';
         $startTime  = microtime(true);
-        $fileCacheKey = 'file_cache_'.$configId.'_'.$recordId;
+        $fileCacheKey = 'file_cache_'.$configId.'_'.implode('_',$recordId);
         //是否开启文件缓存
         $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
