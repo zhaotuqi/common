@@ -1186,43 +1186,52 @@ class Common
     }
 
     /**
-     * 注册docker服务
-     * @return array
+     * request GET Query String
+     * @param $requestUrl
+     * @param $param
+     * @return mixed
      */
-    public function registerDockerService()
+    public function getConfigQuery($requestUrl, $param, $headers = [])
     {
-        $data = [];
-        $url = '';
-        $ret = '';
-        $data['name'] = config('app.app_name') ?? '';
-        $data['ip'] = \request()->server('SERVER_ADDR') ?? '';
-        $data['port'] = \request()->getPort() ?? '';
-        $data['env'] = env("APP_ENV") ?? '';
+        $headers    = $this->defaultHeader($headers);
+        $httpClient = app('HttpClient');
+        $startTime  = microtime(true);
+        $requestUrl = $this->addXdebugParams($requestUrl);
+        try {
+            $i = 0;
+            query:
+            $req = $httpClient->request('GET', $requestUrl, ['query' => $param, 'headers' => $headers, 'timeout' => 3, 'connect_timeout' => 3]);
 
-        //根据ip.json获取信息
-        $path = "/data/config/ip.json";
-        if (file_exists($path)) {
-            $content = file_get_contents($path);
-            $content = json_decode($content, true);
-            if (!empty($content)) {
-                $data['ip'] = $content['address'] ?? '';
-                $data['port'] = $content['port'] ?? '';
-                $data['env'] = $content['env'] ?? '';
+            //打点falcon中的次数，请求时长，错误
+            self::requestToFalcon($requestUrl,(microtime(true) - $startTime)*1000,$req->getStatusCode());
+
+            $result = $req->getBody()->getContents();
+        } catch (RuntimeException $e) {
+            if ($i < 1) {
+                $i++;
+                goto query;
+            } else {
+                throw $e;
             }
         }
-        $env = env('APP_ENV');
-        if (in_array($env, ['qa', 'testing'])) {
-            $url = config('common_config.java_api_url.testing');
-        } elseif (in_array($env, ['staging', 'pre', 'preview'])) {
-            $url = config('common_config.java_api_url.staging');
-        } elseif (in_array($env, ['production', 'pro'])) {
-            $url = config('common_config.java_api_url.production');
-        }
-        if (!empty($url)) {
-            $url = $url . "/instance/register";
-            $ret = curlJson($url, $data);
-        }
 
-        return $ret;
+        $message = [
+            'response_time'  => microtime(true) - $startTime,
+            'request_uri'    => $requestUrl,
+            'request_header' => $headers,
+            'request_body'   => $this->logReduce($param),
+            'response_body'  => $this->logReduce($result)
+        ];
+
+
+        //记录log
+        $this->logger(
+            config('app.app_name'),
+            'servicelog.log',
+            $message,
+            Logger::INFO
+        );
+
+        return $result;
     }
 }

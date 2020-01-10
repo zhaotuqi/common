@@ -8,6 +8,8 @@
 namespace App\Libraries;
 
 
+use Illuminate\Support\Facades\Cache;
+
 class JavaConf
 {
     /**
@@ -58,21 +60,33 @@ class JavaConf
     private function fetchTableInfo($configId){
         $url = $this->getUrl().'config/group/get';
         $startTime  = microtime(true);
+        $fileCacheKey = 'file_cache_get_'.$configId;
+        //是否开启文件缓存
+        $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
-
-            $response = app('Common')->query($url,['config_id' => $configId]);
-            $this->falconInc("JavaConf:Error:GetMap:Req,t=JavaConf");
-            $jsonData = json_decode($response,true);
-            $items = array_get($jsonData,'items',[]);
-            $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
-            if(empty($items)){
-                $this->falconInc("JavaConf:Error:GetMap:DataEmpty,t=JavaConf");
-                return [];
+            if ($isOpen && Cache::has($fileCacheKey)) {
+                $items = Cache::get($fileCacheKey);
+            } else {
+                $response = app('Common')->getConfigQuery($url,['config_id' => $configId]);
+                $this->falconInc("JavaConf:Error:GetMap:Req,t=JavaConf");
+                $jsonData = json_decode($response,true);
+                $items = array_get($jsonData,'items',[]);
+                $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
+                if(empty($items)){
+                    $this->falconInc("JavaConf:Error:GetMap:DataEmpty,t=JavaConf");
+                    return [];
+                }
+                $tmpItems = array_column($items,'item_name','item_id');
+                Cache::forever($fileCacheKey, $tmpItems);
+                $items = $tmpItems;
             }
-            return array_column($items,'item_name','item_id');
+            return $items;
         }catch (\Exception $e){
             $this->falconInc("JavaConf:Error:GetMap:Exception,t=JavaConf");
             $this->falconCos("JavaConf:ReqTime:GetMap,t=JavaConf",$startTime);
+            //增加异常捕获后，改从文件缓存读取
+            $items = Cache::get($fileCacheKey);
+            return $items ?? [];
         }
         return [];
     }
@@ -117,24 +131,35 @@ class JavaConf
     private function fetchConfInfo($configId){
         $url = $this->getUrl().'config/data/page';
         $startTime  = microtime(true);
+        $fileCacheKey = 'file_cache_page_'.$configId;
+        //是否开启文件缓存
+        $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
-            $response = app('Common')->query($url,[
-                'config_id' => $configId,
-                'page' => 1,
-                'page_size' => 999
-            ]);
-            $this->falconInc("JavaConf:Error:GetConf:Req,t=JavaConf");
-            $this->falconCos("JavaConf:ReqTime:GetConf,t=JavaConf",$startTime);
-            $jsonData = json_decode($response,true);
-            $items = array_get($jsonData,'list',[]);
-            if(empty($items)){
-                $this->falconInc("JavaConf:Error:GetConf:DataEmpty,t=JavaConf");
-                return [];
+            if ($isOpen && Cache::has($fileCacheKey)) {
+                $items = Cache::get($fileCacheKey);
+            } else {
+                $response = app('Common')->getConfigQuery($url,[
+                    'config_id' => $configId,
+                    'page' => 1,
+                    'page_size' => 999
+                ]);
+                $this->falconInc("JavaConf:Error:GetConf:Req,t=JavaConf");
+                $this->falconCos("JavaConf:ReqTime:GetConf,t=JavaConf",$startTime);
+                $jsonData = json_decode($response,true);
+                $items = array_get($jsonData,'list',[]);
+                if(empty($items)){
+                    $this->falconInc("JavaConf:Error:GetConf:DataEmpty,t=JavaConf");
+                    return [];
+                }
+                Cache::forever($fileCacheKey, $items);
             }
             return $items;
         }catch (\Exception $e){
             $this->falconInc('JavaConf:Error:GetConf:Exception,t=JavaConf');
             $this->falconCos("JavaConf:ReqTime:GetConf,t=JavaConf",$startTime);
+            //增加异常捕获后，改从文件缓存读取
+            $items = Cache::get($fileCacheKey);
+            return $items ?? [];
         }
         return [];
     }
@@ -208,23 +233,36 @@ class JavaConf
     private function fetchRecordInfo($configId, $recordId){
         $url = $this->getUrl().'config/data/get';
         $startTime  = microtime(true);
+        $fileCacheKey = 'file_cache_'.$configId.'_'.$recordId;
+        //是否开启文件缓存
+        $isOpen = env('OPEN_CONFIG_PLATFORM_FILE_CACHE', false);
         try{
-            $response = app('Common')->query($url,[
-                'config_id'     => $configId,
-                'record_ids'    => implode(',', $recordId),
-            ]);
-            $this->falconInc("JavaConf:Error:fetchRecordInfo:Req,t=JavaConf");
-            $this->falconCos("JavaConf:ReqTime:fetchRecordInfo,t=JavaConf",$startTime);
-            $jsonData = json_decode($response,true);
-            $items = array_get($jsonData,'list',[]);
-            if(empty($items)){
-                $this->falconInc("JavaConf:Error:fetchRecordInfo:DataEmpty,t=JavaConf");
-                return [];
+            if ($isOpen && Cache::has($fileCacheKey)) {
+                $items = Cache::get($fileCacheKey);
+            } else {
+                $response = app('Common')->getConfigQuery($url,[
+                    'config_id'     => $configId,
+                    'record_ids'    => implode(',', $recordId),
+                ]);
+                $this->falconInc("JavaConf:Error:fetchRecordInfo:Req,t=JavaConf");
+                $this->falconCos("JavaConf:ReqTime:fetchRecordInfo,t=JavaConf",$startTime);
+                $jsonData = json_decode($response,true);
+                $items = array_get($jsonData,'list',[]);
+                if(empty($items)){
+                    $this->falconInc("JavaConf:Error:fetchRecordInfo:DataEmpty,t=JavaConf");
+                    return [];
+                }
+                $tmpItems = array_column($items, null, 'record_id');
+                Cache::forever($fileCacheKey, $tmpItems);
+                $items = $tmpItems;
             }
-            return array_column($items, null, 'record_id');
+            return $items;
         }catch (\Exception $e){
             $this->falconInc('JavaConf:Error:fetchRecordInfo:Exception,t=JavaConf');
             $this->falconCos("JavaConf:ReqTime:fetchRecordInfo,t=JavaConf",$startTime);
+            //增加异常捕获后，改从文件缓存读取
+            $items = Cache::get($fileCacheKey);
+            return $items ?? [];
         }
         return [];
     }
