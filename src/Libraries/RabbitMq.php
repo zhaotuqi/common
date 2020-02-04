@@ -67,7 +67,7 @@ class RabbitMq
     {
         $appName = config('app.app_name');
         $log    = new Logger($appName);
-        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmq.log', config('app.log_max_files'));
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqbody.log', config('app.log_max_files'));
         $log->pushHandler($handle);
         $log->log($level, sprintf('%s -> %s',$exchange,$msg));
     }
