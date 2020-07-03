@@ -399,7 +399,14 @@ class Connection implements ConnectionInterface
                 $statement->setFetchMode($fetchMode);
             }
 
-            $statement->execute($me->prepareBindings($bindings));
+            $this->bindValues(
+                $statement, $this->prepareBindings($bindings)
+            );
+
+            // Next, we'll execute the query against the database and return the statement
+            // so we can return the cursor. The cursor will use a PHP generator to give
+            // back one row at a time without using a bunch of memory to render them.
+            $statement->execute();
 
             return $statement;
         });
@@ -470,9 +477,11 @@ class Connection implements ConnectionInterface
                 return true;
             }
 
-            $bindings = $me->prepareBindings($bindings);
+            $statement = $this->getPdo()->prepare($query);
 
-            return $me->getPdo()->prepare($query)->execute($bindings);
+            $this->bindValues($statement, $this->prepareBindings($bindings));
+
+            return $statement->execute();
         });
     }
 
