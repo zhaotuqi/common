@@ -135,18 +135,22 @@ class RabbitMq
 
     /**
      * 消费队列
-     * @author hongfei.geng<hongfei.geng@wenba100.com>
-     * @Date: 2018-12-05
      * @param $queueName
      * @param $callBack
+     * @param null $prefetchSize
+     * @param int $prefetchCount
+     * @return mixed
+     * @author hongfei.geng<hongfei.geng@wenba100.com>
+     * @Date: 2018-12-05
      */
-    public function consumeQueue($queueName,$callBack){
+    public function consumeQueue($queueName,$callBack,$prefetchSize=null, $prefetchCount=1){
         try {
             $con = $this->getCon();
             if ($con) {
 
                 $channel = $con->channel();
                 $channel->queue_declare($queueName, false, true, false, false);
+                $channel->basic_qos($prefetchSize, $prefetchCount, false);
                 $channel->basic_consume($queueName, '', false, false, false, false, $callBack);
 
                 while (count($channel->callbacks)) {
