@@ -158,7 +158,7 @@ class RabbitMq
                 }
             }
         }catch (\Exception $e){
-            echo sprintf("[%s][%s]:[%s]--%s stack: %s\n",date("Y-m-d H:i:s"),$e->getFile(),$e->getLine(),$e->getMessage(),$e->getTraceAsString());
+            echo sprintf("[%s][%s]:[%s]--%s stack: %s\n",date("Y-m-d H:i:s"),$e->getMessage(),$e->getFile(),$e->getLine(),$e->getTraceAsString());
             exit(1); //异常了退出即可，守护进程会让他自动重启，由于没有返回ACK 消息会再次派发
            // sleep(15);
             //return $this->consumeQueue($queueName,$callBack);
