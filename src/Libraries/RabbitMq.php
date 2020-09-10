@@ -24,16 +24,16 @@ class RabbitMq
         if ($con === false || $con->isConnected() === false) {
 
             $rabbitmqConfig = [
-                "RABBITMQ_HOST"                 => env('RABBITMQ_HOST'),
-                "RABBITMQ_PORT"                 => env('RABBITMQ_PORT'),
-                "RABBITMQ_USER"                 => env('RABBITMQ_USER'),
-                "RABBITMQ_PASSWORD"             => env('RABBITMQ_PASSWORD'),
-                'RABBITMQ_VHOST'                => '/',
-                'RABBITMQ_INSIST'               => false,
-                'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
-                'RABBITMQ_LOGIN_RESPONSE'       => null,
-                'RABBITMQ_LOCALE'               => 'en_US',
-                'RABBITMQ_CONNECTION_TIMEOUT'   => 3.0
+                "RABBITMQ_HOST" => env('RABBITMQ_HOST'),
+                "RABBITMQ_PORT" => env('RABBITMQ_PORT'),
+                "RABBITMQ_USER" => env('RABBITMQ_USER'),
+                "RABBITMQ_PASSWORD" => env('RABBITMQ_PASSWORD'),
+                'RABBITMQ_VHOST' => '/',
+                'RABBITMQ_INSIST' => false,
+                'RABBITMQ_LOGIN_METHOD' => 'AMQPLAIN',
+                'RABBITMQ_LOGIN_RESPONSE' => null,
+                'RABBITMQ_LOCALE' => 'en_US',
+                'RABBITMQ_CONNECTION_TIMEOUT' => 3.0
             ];
             //检查rabbitmq连接配置项
             $check_config_msg = "";
@@ -63,13 +63,14 @@ class RabbitMq
         return $con;
     }
 
-    public function logger($exchange,$msg,$level = Logger::INFO)
+    public function logger($exchange, $msg, $level = Logger::INFO)
     {
         $appName = config('app.app_name');
-        $log    = new Logger($appName);
-        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqbody.log', config('app.log_max_files'));
+        $log = new Logger($appName);
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqbody.log',
+            config('app.log_max_files'));
         $log->pushHandler($handle);
-        $log->log($level, sprintf('%s -> %s',$exchange,$msg));
+        $log->log($level, sprintf('%s -> %s', $exchange, $msg));
     }
 
     /**
@@ -78,57 +79,59 @@ class RabbitMq
      * @param int $level
      * 记录RabbitMQ连接&发送时间
      */
-    private function logger_time($time,$exchange,$level = Logger::INFO)
+    private function logger_time($time, $exchange, $level = Logger::INFO)
     {
         $appName = config('app.app_name');
-        $log    = new Logger($appName);
-        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqtime.log', config('app.log_max_files'));
+        $log = new Logger($appName);
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqtime.log',
+            config('app.log_max_files'));
         $log->pushHandler($handle);
         $log->log($level, sprintf('%s -> %s', $time, $exchange));
     }
 
     /**
      * 发送消息
-     * @author hongfei.geng<hongfei.geng@wenba100.com>
-     * @Date: 2018-12-05
      * @param $exchange
      * @param $msg
+     * @author hongfei.geng<hongfei.geng@wenba100.com>
+     * @Date: 2018-12-05
      */
-    public function sendQueue($exchange,$msg){
+    public function sendQueue($exchange, $msg)
+    {
         $ret = false;
-        $this->logger($exchange,$msg);
-        try{
+        $this->logger($exchange, $msg);
+        try {
             $startTime = microtime(true);
             $con = $this->getCon();
-            if($con) {
+            if ($con) {
                 $channel = $con->channel();
                 $channel->confirm_select();
                 $isSendOk = false;
-                $channel->set_ack_handler(function($message)use(&$isSendOk){
+                $channel->set_ack_handler(function ($message) use (&$isSendOk) {
                     $isSendOk = true;
                 });
-                $channel->set_nack_handler(function ($message)use ($exchange,$msg){
-                    dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
+                $channel->set_nack_handler(function ($message) use ($exchange, $msg) {
+                    dispatch((new RabbitMqJob($exchange, $msg))->delay(60));
                 });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
                 $amqMsg = new AMQPMessage($msg, ['delivery' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
                 $ret = $channel->basic_publish($amqMsg, $exchange);
                 $channel->wait_for_pending_acks(3);
                 $channel->close();
-                if(!$isSendOk){
-                    $this->logger($exchange,$msg.' ： 发送失败',Logger::WARNING);
+                if (!$isSendOk) {
+                    $this->logger($exchange, $msg . ' ： 发送失败', Logger::WARNING);
                     throw new \Exception("发送消息失败");
                 }
-            }else{
-                $this->logger($exchange,$msg.' ： 链接断开',Logger::WARNING);
+            } else {
+                $this->logger($exchange, $msg . ' ： 链接断开', Logger::WARNING);
                 throw new \Exception("链接RabbitMq失败");
             }
 
             $endTime = microtime(true);
             $time = $endTime - $startTime;
             $this->logger_time($time . "=" . $endTime . "-" . $startTime, $exchange);
-        }catch (\Exception $e){
-            dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
+        } catch (\Exception $e) {
+            dispatch((new RabbitMqJob($exchange, $msg))->delay(60));
         }
         return $ret;
     }
@@ -143,7 +146,8 @@ class RabbitMq
      * @author hongfei.geng<hongfei.geng@wenba100.com>
      * @Date: 2018-12-05
      */
-    public function consumeQueue($queueName,$callBack,$prefetchSize=null, $prefetchCount=1){
+    public function consumeQueue($queueName, $callBack, $prefetchSize = null, $prefetchCount = 1)
+    {
         try {
             $con = $this->getCon();
             if ($con) {
@@ -157,10 +161,17 @@ class RabbitMq
                     $channel->wait();
                 }
             }
-        }catch (\Exception $e){
-            echo sprintf("[%s][%s]:[%s]--%s stack: %s\n",date("Y-m-d H:i:s"),$e->getMessage(),$e->getFile(),$e->getLine(),$e->getTraceAsString());
+        } catch (\Exception $e) {
+
+            echo printf("[%s]-[%s]--[%s]--[%s:%s]--%s",
+                `hostname`,
+                date("Y-m-d H:i:s"),
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine(),
+                $e->getTraceAsString());
             exit(1); //异常了退出即可，守护进程会让他自动重启，由于没有返回ACK 消息会再次派发
-           // sleep(15);
+            // sleep(15);
             //return $this->consumeQueue($queueName,$callBack);
         }
     }
@@ -173,16 +184,16 @@ class RabbitMq
     private function __checkConnection()
     {
         $checkArray = [
-            'RABBITMQ_HOST'                 => env('RABBITMQ_HOST'),
-            'RABBITMQ_PORT'                 => env('RABBITMQ_PORT'),
-            'RABBITMQ_USER'                 => env('RABBITMQ_USER'),
-            'RABBITMQ_PASSWORD'             => env('RABBITMQ_PASSWORD'),
-            'RABBITMQ_VHOST_JSPT'           => env('RABBITMQ_VHOST_JSPT'),
-            'RABBITMQ_INSIST'               => false,
-            'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
-            'RABBITMQ_LOGIN_RESPONSE'       => null,
-            'RABBITMQ_LOCALE'               => 'en_US',
-            'RABBITMQ_CONNECTION_TIMEOUT'   => 3.0
+            'RABBITMQ_HOST' => env('RABBITMQ_HOST'),
+            'RABBITMQ_PORT' => env('RABBITMQ_PORT'),
+            'RABBITMQ_USER' => env('RABBITMQ_USER'),
+            'RABBITMQ_PASSWORD' => env('RABBITMQ_PASSWORD'),
+            'RABBITMQ_VHOST_JSPT' => env('RABBITMQ_VHOST_JSPT'),
+            'RABBITMQ_INSIST' => false,
+            'RABBITMQ_LOGIN_METHOD' => 'AMQPLAIN',
+            'RABBITMQ_LOGIN_RESPONSE' => null,
+            'RABBITMQ_LOCALE' => 'en_US',
+            'RABBITMQ_CONNECTION_TIMEOUT' => 3.0
         ];
 
         //检查rabbitmq连接配置项
@@ -246,7 +257,7 @@ class RabbitMq
             $endTime = microtime(true);
             $time = $endTime - $startTime;
             $this->logger_time($time . "=" . $endTime . "-" . $startTime, $exchange);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
 
             dispatch((new RabbitMqJSPTJob($exchange, $msg))->delay(60));
         }
