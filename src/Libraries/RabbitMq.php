@@ -159,7 +159,7 @@ class RabbitMq
             }
         }catch (\Exception $e){
             echo printf("[%s]-[%s][status code: %s]--[message:%s]--[%s:%s]--%s",
-                `hostname`,
+                trim(`hostname`),
                 date("Y-m-d H:i:s"),
                 $e->getCode(),
                 $e->getMessage(),
