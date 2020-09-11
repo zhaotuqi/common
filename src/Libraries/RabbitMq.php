@@ -167,7 +167,7 @@ class RabbitMq
                 $e->getFile(),
                 $e->getLine(),
                 $e->getTraceAsString());
-            Log::info('rabbitmq消费异常,队列名称：'.$queueName .  $message);
+            Log::error('rabbitmq消费异常,队列名称：'.$queueName .'请手动重启脚本，或者存在脚本守护进程,守护进程会自动重启异常脚本'.  $message);
             exit(1); //异常了退出即可，守护进程会让他自动重启，由于没有返回ACK 消息会再次派发
            // sleep(15);
             //return $this->consumeQueue($queueName,$callBack);
