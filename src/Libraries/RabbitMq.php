@@ -159,11 +159,11 @@ class RabbitMq
                 }
             }
         }catch (\Exception $e){
-            $message =  printf("[主机名称: %s]\n[时间：%s]\n[异常状态码: %s]\n[异常原因: %s]\n异常所在文件行：[%s:%s]\n异常详情：\n%s",
+            $message =  printf("[异常原因: %s]\n[主机名称: %s]\n[时间：%s]\n[异常状态码: %s]\n异常所在文件行：[%s:%s]\n异常详情：\n%s",
+                $e->getMessage(),
                 trim(`hostname`),
                 date("Y-m-d H:i:s"),
                 $e->getCode(),
-                $e->getMessage(),
                 $e->getFile(),
                 $e->getLine(),
                 $e->getTraceAsString());
