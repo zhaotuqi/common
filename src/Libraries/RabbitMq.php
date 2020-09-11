@@ -159,9 +159,9 @@ class RabbitMq
                 }
             }
         }catch (\Exception $e){
-            $message =  printf("[%s]-[hostname: %s][status code: %s]--[message: %s]\n--[%s:%s]\n--%s",
-                date("Y-m-d H:i:s"),
+            $message =  printf("[hostname: %s]-[%s]-[status code: %s]--[message: %s]\n--[%s:%s]\n%s",
                 trim(`hostname`),
+                date("Y-m-d H:i:s"),
                 $e->getCode(),
                 $e->getMessage(),
                 $e->getFile(),
