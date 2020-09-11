@@ -7,6 +7,7 @@
 
 namespace App\Libraries;
 
+use Illuminate\Support\Facades\Log;
 use Monolog\Logger;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -158,9 +159,18 @@ class RabbitMq
                 }
             }
         }catch (\Exception $e){
-            echo sprintf("[%s] %s\n",date("Y-m-d H:i:s"),$e->getTraceAsString());
-            sleep(15);
-            return $this->consumeQueue($queueName,$callBack);
+            $message =  printf("[异常原因: %s]\n[主机名称: %s]\n[时间：%s]\n[异常状态码: %s]\n异常所在文件行：[%s:%s]\n异常详情：\n%s",
+                $e->getMessage(),
+                trim(`hostname`),
+                date("Y-m-d H:i:s"),
+                $e->getCode(),
+                $e->getFile(),
+                $e->getLine(),
+                $e->getTraceAsString());
+            Log::error('rabbitmq消费异常,队列名称：'.$queueName .'请手动重启脚本，或者存在脚本守护进程,守护进程会自动重启异常脚本'.  $message);
+            exit(1); //异常了退出即可，守护进程会让他自动重启，由于没有返回ACK 消息会再次派发
+           // sleep(15);
+            //return $this->consumeQueue($queueName,$callBack);
         }
     }
 
