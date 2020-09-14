@@ -6,7 +6,7 @@
  */
 
 namespace App\Libraries;
-
+use Log;
 
 use Illuminate\Support\Facades\Cache;
 
@@ -202,20 +202,25 @@ class JavaConf
      * @param $configId integer 配置id
      * @return array|bool 列表信息
      */
-    private function fetchItemList($configId){
+    private function fetchItemList($configId)
+    {
         $map = $this->fetchTableInfo($configId);
-        if(empty($map)){
+        if (empty($map)) {
             return false;
         }
         $data = $this->fetchConfInfo($configId);
-        if(empty($data)){
+        if (empty($data)) {
             return false;
         }
 
         $retArr = [];
-        foreach ($data AS $items){
+        foreach ($data AS $items) {
+            if (empty(array_get($items, 'items'))) {
+                Log::info('javaconf 配置平台 items null params:' .json_encode($items, JSON_UNESCAPED_UNICODE));
+                continue;
+            }
             $line = [];
-            $list = array_column(array_get($items,'items',[]), null, 'item_id');
+            $list = array_column(array_get($items, 'items', []), null, 'item_id');
             foreach ($map as $k => $v) {
                 $line[$v] = isset($list[$k]) ? array_get($list[$k], 'item_value', '') : '';
             }
