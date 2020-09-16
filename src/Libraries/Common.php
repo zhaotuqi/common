@@ -61,8 +61,9 @@ class Common
             return false;
         }
 
-        $message = sprintf("主机名称: %s\n异常时间: %s\n异常原因: %s\n异常状态码: %s\n%s() 入参: %s\n异常所在文件行: [%s:%s]\n",
+        $message = sprintf("主机名称: %s\n运行方式: %s\n异常时间: %s\n异常原因: %s\n异常状态码: %s\n%s() 入参: %s\n异常所在文件行: [%s:%s]\n",
             trim(`hostname`),
+            php_sapi_name(),
             date("Y-m-d H:i:s"),
             $e->getMessage(),
             $e->getCode(),
