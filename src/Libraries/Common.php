@@ -57,9 +57,9 @@ class Common
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
         //过滤开发测试环境
-        if(self::checkAllowWarningEnv() == false) {
-            return false;
-        }
+//        if(self::checkAllowWarningEnv() == false) {
+//            return false;
+//        }
 
         $message = sprintf("主机名称: %s\n运行方式: %s\n异常时间: %s\n异常原因: %s\n异常状态码: %s\n%s() 入参: %s\n异常所在文件行: [%s:%s]\n",
             trim(`hostname`),
@@ -203,9 +203,9 @@ class Common
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
         //过滤开发测试环境
-        if(self::checkAllowWarningEnv() == false) {
-            return false;
-        }
+//        if(self::checkAllowWarningEnv() == false) {
+//            return false;
+//        }
         $param = [
             'messages'    => gethostname()." ".$message,
             'request_url' => $requestUrl,
