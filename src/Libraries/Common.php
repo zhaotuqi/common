@@ -57,11 +57,24 @@ class Common
     public function sendExceptionMail($title, $param, Exception $e, $requestUrl = null)
     {
         //过滤开发测试环境
-        if(self::checkAllowWarningEnv() == false) {
-            return false;
-        }
+//        if(self::checkAllowWarningEnv() == false) {
+//            return false;
+//        }
+
+//        $message = sprintf("主机名称: %s\n运行方式: %s\n异常时间: %s\n异常原因: %s\n异常状态码: %s\n%s() 入参: %s\n异常所在文件行: [%s:%s]\n",
+        $message = sprintf("主机名称: %s\n运行方式: %s\n异常时间: %s\n异常原因: %s\n异常状态码: %s\n异常所在文件行: [%s:%s]\n",
+            trim(`hostname`),
+            php_sapi_name(),
+            date("Y-m-d H:i:s"),
+            $e->getMessage(),
+            $e->getCode(),
+//            array_get($e->getTrace(), '1.function', '未知function'),
+//            json_encode(array_get($e->getTrace(), '1.args', '未知param'), JSON_UNESCAPED_UNICODE),
+            $e->getFile(),
+            $e->getLine());
+
         $param = [
-            'messages' => gethostname() . " " . $e->getMessage(),
+            'messages' => $message,
             'request_url' => $requestUrl,
             'param' => json_encode($param, JSON_UNESCAPED_UNICODE),
             'trace' => str_replace("\n", "<br/>", $e->getTraceAsString()),
@@ -191,11 +204,17 @@ class Common
     public function sendWarningMail($title, $param, $message, $requestUrl = null)
     {
         //过滤开发测试环境
-        if(self::checkAllowWarningEnv() == false) {
-            return false;
-        }
+//        if(self::checkAllowWarningEnv() == false) {
+//            return false;
+//        }
+        $message = sprintf("主机名称: %s\n运行方式: %s\n异常时间: %s\n异常原因: %s\n",
+            trim(`hostname`),
+            php_sapi_name(),
+            date("Y-m-d H:i:s"),
+            $message);
+
         $param = [
-            'messages'    => gethostname()." ".$message,
+            'messages'    => $message,
             'request_url' => $requestUrl,
             'param'       => json_encode($param, JSON_UNESCAPED_UNICODE),
             'trace'       => json_encode($param, JSON_UNESCAPED_UNICODE),
