@@ -23,10 +23,6 @@ class CommonRedis
         $startTime  = microtime(true);
 
         $ret = call_user_func_array([app('redis'),$name],$arguments);
-        //打点时长
-        \Monitor\Client::cost($name.',t=redis_cost',(microtime(true) - $startTime)*1000);
-        //打点次数
-        \Monitor\Client::inc($name.',t=redis_count');
 
         return $ret;
     }
