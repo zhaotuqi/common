@@ -6,6 +6,7 @@ use App\Libraries\Encryption;
 use App\Libraries\JavaConf;
 use App\Libraries\RabbitMq;
 use App\Libraries\WenBaRedis;
+use App\Libraries\CommonRedis;
 use Illuminate\Support\ServiceProvider;
 use App\Libraries\Common;
 use App\Libraries\SettlementPlatformIdGernerator;
@@ -45,6 +46,11 @@ class CommonProvider extends ServiceProvider
         //注册wredis 作为redis的替换方式，在每个应用中将 app('wredis') 替换 app('redis')即可
         $this->app->bind('wredis', function () {
             return new WenBaRedis();
+        });
+
+        //注册credis 作为redis的替换方式，在每个应用中将 app('credis') 替换 app('redis')即可
+        $this->app->bind('credis', function () {
+            return new CommonRedis();
         });
 
         /**
