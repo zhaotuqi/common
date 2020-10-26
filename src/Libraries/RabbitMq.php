@@ -11,40 +11,37 @@ use Illuminate\Support\Facades\Log;
 use Monolog\Logger;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Log;
+
 
 class RabbitMq
 {
-    public function __construct()
-    {
-        $this->getCon();
-    }
-
-    private function getCon()
+    public function getCon()
     {
         static $con = false;
         if ($con === false || $con->isConnected() === false) {
 
             $rabbitmqConfig = [
-                "RABBITMQ_HOST"                 => env('RABBITMQ_HOST'),
-                "RABBITMQ_PORT"                 => env('RABBITMQ_PORT'),
-                "RABBITMQ_USER"                 => env('RABBITMQ_USER'),
-                "RABBITMQ_PASSWORD"             => env('RABBITMQ_PASSWORD'),
-                'RABBITMQ_VHOST'                => '/',
-                'RABBITMQ_INSIST'               => false,
-                'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
-                'RABBITMQ_LOGIN_RESPONSE'       => null,
-                'RABBITMQ_LOCALE'               => 'en_US',
-                'RABBITMQ_CONNECTION_TIMEOUT'   => 3.0
+                "RABBITMQ_HOST" => env('RABBITMQ_HOST'),
+                "RABBITMQ_PORT" => env('RABBITMQ_PORT'),
+                "RABBITMQ_USER" => env('RABBITMQ_USER'),
+                "RABBITMQ_PASSWORD" => env('RABBITMQ_PASSWORD'),
+                'RABBITMQ_VHOST' => '/',
+                'RABBITMQ_INSIST' => false,
+                'RABBITMQ_LOGIN_METHOD' => 'AMQPLAIN',
+                'RABBITMQ_LOGIN_RESPONSE' => null,
+                'RABBITMQ_LOCALE' => 'en_US',
+                'RABBITMQ_CONNECTION_TIMEOUT' => 3.0
             ];
             //检查rabbitmq连接配置项
-            $check_config_msg = "";
-            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
-            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
-            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
-            $check_config_msg .= empty($rabbitmqConfig["RABBITMQ_PASSWORD"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
+            $checkConfigMsg = "";
+            $checkConfigMsg .= empty($rabbitmqConfig["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
+            $checkConfigMsg .= empty($rabbitmqConfig["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
+            $checkConfigMsg .= empty($rabbitmqConfig["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
+            $checkConfigMsg .= empty($rabbitmqConfig["RABBITMQ_PASSWORD"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
 
-            if (!empty($check_config_msg)) {
-                throw new \Exception(PHP_EOL . $check_config_msg);
+            if (!empty($checkConfigMsg)) {
+                throw new \Exception(PHP_EOL . $checkConfigMsg);
             }
 
             $con = new AMQPStreamConnection(
@@ -64,13 +61,14 @@ class RabbitMq
         return $con;
     }
 
-    public function logger($exchange,$msg,$level = Logger::INFO)
+    public function logger($exchange, $msg, $level = Logger::INFO)
     {
         $appName = config('app.app_name');
-        $log    = new Logger($appName);
-        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqbody.log', config('app.log_max_files'));
+        $log = new Logger($appName);
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqbody.log',
+            config('app.log_max_files'));
         $log->pushHandler($handle);
-        $log->log($level, sprintf('%s -> %s',$exchange,$msg));
+        $log->log($level, sprintf('%s -> %s', $exchange, $msg));
     }
 
     /**
@@ -79,57 +77,68 @@ class RabbitMq
      * @param int $level
      * 记录RabbitMQ连接&发送时间
      */
-    private function logger_time($time,$exchange,$level = Logger::INFO)
+    private function logger_time($time, $exchange, $level = Logger::INFO)
     {
         $appName = config('app.app_name');
-        $log    = new Logger($appName);
-        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqtime.log', config('app.log_max_files'));
+        $log = new Logger($appName);
+        $handle = new \App\Extension\LogRewrite('/data/logs/' . $appName . '/rabbitmqtime.log',
+            config('app.log_max_files'));
         $log->pushHandler($handle);
         $log->log($level, sprintf('%s -> %s', $time, $exchange));
     }
 
     /**
      * 发送消息
-     * @author hongfei.geng<hongfei.geng@wenba100.com>
-     * @Date: 2018-12-05
      * @param $exchange
      * @param $msg
+     * @author hongfei.geng<hongfei.geng@wenba100.com>
+     * @Date: 2018-12-05
      */
-    public function sendQueue($exchange,$msg){
+    public function sendQueue($exchange, $msg)
+    {
         $ret = false;
-        $this->logger($exchange,$msg);
-        try{
+        $this->logger($exchange, $msg);
+        $i = 0;
+        B:
+        try {
             $startTime = microtime(true);
             $con = $this->getCon();
-            if($con) {
+            if ($con) {
                 $channel = $con->channel();
                 $channel->confirm_select();
                 $isSendOk = false;
-                $channel->set_ack_handler(function($message)use(&$isSendOk){
+                $channel->set_ack_handler(function ($message) use (&$isSendOk) {
                     $isSendOk = true;
                 });
-                $channel->set_nack_handler(function ($message)use ($exchange,$msg){
-                    dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
+                $channel->set_nack_handler(function ($message) use ($exchange, $msg) {
+                    dispatch((new RabbitMqJob($exchange, $msg))->delay(60));
                 });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
                 $amqMsg = new AMQPMessage($msg, ['delivery' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
                 $ret = $channel->basic_publish($amqMsg, $exchange);
                 $channel->wait_for_pending_acks(3);
                 $channel->close();
-                if(!$isSendOk){
-                    $this->logger($exchange,$msg.' ： 发送失败',Logger::WARNING);
+                if (!$isSendOk) {
+                    $this->logger($exchange, $msg . ' ： 发送失败', Logger::WARNING);
                     throw new \Exception("发送消息失败");
                 }
-            }else{
-                $this->logger($exchange,$msg.' ： 链接断开',Logger::WARNING);
+            } else {
+                $this->logger($exchange, $msg . ' ： 链接断开', Logger::WARNING);
                 throw new \Exception("链接RabbitMq失败");
             }
 
             $endTime = microtime(true);
             $time = $endTime - $startTime;
             $this->logger_time($time . "=" . $endTime . "-" . $startTime, $exchange);
-        }catch (\Exception $e){
-            dispatch((new RabbitMqJob($exchange,$msg))->delay(60));
+        } catch (\Exception $e) {
+            $i++;
+            if ($i >= 3) {
+                $msg = 'rabbitmq生产数据重试三次，仍然异常告警，exhange:' . $exchange . 'param：' . $msg;
+                $this->logger($msg);
+                throw new \Exception($msg);
+            }
+            sleep(30);
+            goto B;
         }
         return $ret;
     }
@@ -144,7 +153,8 @@ class RabbitMq
      * @author hongfei.geng<hongfei.geng@wenba100.com>
      * @Date: 2018-12-05
      */
-    public function consumeQueue($queueName,$callBack,$prefetchSize=null, $prefetchCount=1){
+    public function consumeQueue($queueName, $callBack, $prefetchSize = null, $prefetchCount = 1)
+    {
         try {
             $con = $this->getCon();
             if ($con) {
@@ -158,18 +168,18 @@ class RabbitMq
                     $channel->wait();
                 }
             }
-        }catch (\Exception $e){
-            $message =  sprintf("[异常原因: %s]\n[主机名称: %s]\n[时间：%s]\n[异常状态码: %s]\n异常所在文件行：[%s:%s]\n异常详情：\n%s",
+        } catch (\Exception $e) {
+            $message = sprintf("[异常原因: %s]\n[主机名称: %s]\n[时间：%s]\n[异常状态码: %s]\n异常所在文件行：[%s:%s]\n异常详情：\n%s",
                 $e->getMessage(),
-                trim(`hostname`),
+                gethostname(),
                 date("Y-m-d H:i:s"),
                 $e->getCode(),
                 $e->getFile(),
                 $e->getLine(),
                 $e->getTraceAsString());
-            Log::error('rabbitmq消费异常,队列名称：'.$queueName .'请手动重启脚本，或者存在脚本守护进程,守护进程会自动重启异常脚本'.  $message);
+            Log::error('rabbitmq消费异常,队列名称：' . $queueName . '请手动重启脚本，或者存在脚本守护进程,守护进程会自动重启异常脚本' . $message);
             exit(1); //异常了退出即可，守护进程会让他自动重启，由于没有返回ACK 消息会再次派发
-           // sleep(15);
+            // sleep(15);
             //return $this->consumeQueue($queueName,$callBack);
         }
     }
@@ -177,48 +187,6 @@ class RabbitMq
     public function __destruct()
     {
         $this->getCon()->close();
-    }
-
-    private function __checkConnection()
-    {
-        $checkArray = [
-            'RABBITMQ_HOST'                 => env('RABBITMQ_HOST'),
-            'RABBITMQ_PORT'                 => env('RABBITMQ_PORT'),
-            'RABBITMQ_USER'                 => env('RABBITMQ_USER'),
-            'RABBITMQ_PASSWORD'             => env('RABBITMQ_PASSWORD'),
-            'RABBITMQ_VHOST_JSPT'           => env('RABBITMQ_VHOST_JSPT'),
-            'RABBITMQ_INSIST'               => false,
-            'RABBITMQ_LOGIN_METHOD'         => 'AMQPLAIN',
-            'RABBITMQ_LOGIN_RESPONSE'       => null,
-            'RABBITMQ_LOCALE'               => 'en_US',
-            'RABBITMQ_CONNECTION_TIMEOUT'   => 3.0
-        ];
-
-        //检查rabbitmq连接配置项
-        $check_config_msg = "";
-        $check_config_msg .= empty($checkArray["RABBITMQ_HOST"]) ? ".env文件： RABBITMQ_HOST 未配置" . PHP_EOL : "";
-        $check_config_msg .= empty($checkArray["RABBITMQ_PORT"]) ? ".env文件： RABBITMQ_PORT 未配置" . PHP_EOL : "";
-        $check_config_msg .= empty($checkArray["RABBITMQ_USER"]) ? ".env文件： RABBITMQ_USER 未配置" . PHP_EOL : "";
-        $check_config_msg .= empty($checkArray["RABBITMQ_VHOST_JSPT"]) ? ".env文件： RABBITMQ_PASSWORD 未配置" . PHP_EOL : "";
-
-        if (!empty($check_config_msg)) {
-            throw new \Exception(PHP_EOL . $check_config_msg);
-        }
-
-        $con = new AMQPStreamConnection(
-            $checkArray['RABBITMQ_HOST'],
-            $checkArray['RABBITMQ_PORT'],
-            $checkArray['RABBITMQ_USER'],
-            $checkArray['RABBITMQ_PASSWORD'],
-            $checkArray['RABBITMQ_VHOST_JSPT'],
-            $checkArray['RABBITMQ_INSIST'],
-            $checkArray['RABBITMQ_LOGIN_METHOD'],
-            $checkArray['RABBITMQ_LOGIN_RESPONSE'],
-            $checkArray['RABBITMQ_LOCALE'],
-            $checkArray['RABBITMQ_CONNECTION_TIMEOUT']
-        );
-
-        return $con;
     }
 
     /**
@@ -231,7 +199,10 @@ class RabbitMq
     public function sendQueueToJSPT($exchange, $msg)
     {
         $startTime = microtime(true);
-        $con = $this->__checkConnection();
+        $this->logger($exchange, $msg);
+        $i = 0;
+        A:
+        $con = $this->getCon();
 
         try {
             if (empty($con)) {
@@ -255,9 +226,15 @@ class RabbitMq
             $endTime = microtime(true);
             $time = $endTime - $startTime;
             $this->logger_time($time . "=" . $endTime . "-" . $startTime, $exchange);
-        }catch (\Exception $e) {
-
-            dispatch((new RabbitMqJSPTJob($exchange, $msg))->delay(60));
+        } catch (\Exception $e) {
+            $i++;
+            if ($i >= 3) {
+                $msg = '结算平台,rabbitmq生产数据重试三次，仍然异常告警，exhange:' . $exchange . 'param：' . $msg;
+                $this->logger($msg);
+                throw new \Exception($msg);
+            }
+            sleep(30);
+            goto A;
         }
     }
 }
