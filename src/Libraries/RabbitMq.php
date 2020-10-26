@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Log;
 use Monolog\Logger;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
-use Log;
-
 
 class RabbitMq
 {
