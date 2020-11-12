@@ -24,12 +24,7 @@ class RabbitMq
                 "RABBITMQ_PORT" => env('RABBITMQ_PORT'),
                 "RABBITMQ_USER" => env('RABBITMQ_USER'),
                 "RABBITMQ_PASSWORD" => env('RABBITMQ_PASSWORD'),
-                'RABBITMQ_VHOST' => '/',
-                'RABBITMQ_INSIST' => false,
-                'RABBITMQ_LOGIN_METHOD' => 'AMQPLAIN',
-                'RABBITMQ_LOGIN_RESPONSE' => null,
-                'RABBITMQ_LOCALE' => 'en_US',
-                'RABBITMQ_CONNECTION_TIMEOUT' => 3.0
+                'RABBITMQ_VHOST' => '/'
             ];
             //检查rabbitmq连接配置项
             $checkConfigMsg = "";
@@ -47,12 +42,7 @@ class RabbitMq
                 $rabbitmqConfig['RABBITMQ_PORT'],
                 $rabbitmqConfig['RABBITMQ_USER'],
                 $rabbitmqConfig['RABBITMQ_PASSWORD'],
-                $rabbitmqConfig['RABBITMQ_VHOST'],
-                $rabbitmqConfig['RABBITMQ_INSIST'],
-                $rabbitmqConfig['RABBITMQ_LOGIN_METHOD'],
-                $rabbitmqConfig['RABBITMQ_LOGIN_RESPONSE'],
-                $rabbitmqConfig['RABBITMQ_LOCALE'],
-                $rabbitmqConfig['RABBITMQ_CONNECTION_TIMEOUT']
+                $rabbitmqConfig['RABBITMQ_VHOST']
             );
         }
 
@@ -109,7 +99,7 @@ class RabbitMq
                     $isSendOk = true;
                 });
                 $channel->set_nack_handler(function ($message) use ($exchange, $msg) {
-                    dispatch((new RabbitMqJob($exchange, $msg))->delay(60));
+
                 });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
                 $amqMsg = new AMQPMessage($msg, ['delivery' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
@@ -131,11 +121,11 @@ class RabbitMq
         } catch (\Exception $e) {
             $i++;
             if ($i >= 3) {
-                $msg = 'rabbitmq生产数据重试三次，仍然异常告警，exhange:' . $exchange . 'param：' . $msg;
+                $msg = 'rabbitmq生产数据失败告警，等待3秒重试。已经三次仍然没有成功。参数如下，exhange:' . $exchange . 'param：' . $msg;
                 $this->logger($msg);
                 throw new \Exception($msg);
             }
-            sleep(30);
+            sleep(3);
             goto B;
         }
         return $ret;
