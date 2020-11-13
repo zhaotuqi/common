@@ -121,7 +121,7 @@ class RabbitMq
             $i++;
             if ($i >= 3) {
                 $msg = 'rabbitmq生产数据失败告警，等待10秒重试。已经三次仍然没有成功。参数如下，exhange:' . $exchange . 'param：' . $msg;
-                $this->logger($msg);
+                $this->logger($msg, Logger::WARNING);
                 throw new \Exception($msg);
             }
             sleep(10);
@@ -217,7 +217,7 @@ class RabbitMq
             $i++;
             if ($i >= 3) {
                 $msg = '结算平台,rabbitmq生产数据重试三次，仍然异常告警，exhange:' . $exchange . 'param：' . $msg;
-                $this->logger($msg);
+                $this->logger($msg, Logger::WARNING);
                 throw new \Exception($msg);
             }
             sleep(10);
