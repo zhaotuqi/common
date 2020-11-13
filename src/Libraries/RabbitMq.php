@@ -99,7 +99,6 @@ class RabbitMq
                     $isSendOk = true;
                 });
                 $channel->set_nack_handler(function ($message) use ($exchange, $msg) {
-
                 });
                 $channel->exchange_declare($exchange, 'fanout', false, true, false);
                 $amqMsg = new AMQPMessage($msg, ['delivery' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
@@ -121,11 +120,11 @@ class RabbitMq
         } catch (\Exception $e) {
             $i++;
             if ($i >= 3) {
-                $msg = 'rabbitmq生产数据失败告警，等待3秒重试。已经三次仍然没有成功。参数如下，exhange:' . $exchange . 'param：' . $msg;
+                $msg = 'rabbitmq生产数据失败告警，等待10秒重试。已经三次仍然没有成功。参数如下，exhange:' . $exchange . 'param：' . $msg;
                 $this->logger($msg);
                 throw new \Exception($msg);
             }
-            sleep(3);
+            sleep(10);
             goto B;
         }
         return $ret;
@@ -221,7 +220,7 @@ class RabbitMq
                 $this->logger($msg);
                 throw new \Exception($msg);
             }
-            sleep(30);
+            sleep(10);
             goto A;
         }
     }
