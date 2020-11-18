@@ -7,8 +7,8 @@
     
 ## 结算平台--ID生成器配置 .env配置文件
 
-## test hook
-```dotenv
+## test gitlab webhook
+```
 
 
 #prod  正式环境ID生成器配置
