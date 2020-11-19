@@ -7,7 +7,6 @@
     
 ## 结算平台--ID生成器配置 .env 现在没啥用了 可以删除了
 
-##  gitlab webhook test
 ```
 
 
