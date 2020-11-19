@@ -23,7 +23,7 @@ RTC_BASE_UUID_APP_KEY='keytest2'
     
 ```
 
-## 计算平台--ID生成器PHP调用 现在没啥用了 可以删除了 2020-11-20
+## 计算平台--ID生成器PHP调用 现在没啥用了 可以删除了 2020-11-20 
 ```php
 
      use App\Libraries\SettlementPlatformIdGernerator;
