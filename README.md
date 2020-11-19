@@ -5,7 +5,7 @@
     4 新增env配置
     5 新增结算平台ID生成器（用于算准课耗等）
     
-## 结算平台--ID生成器配置 .env 现在没啥用了 可以删除了 2020-11-20
+## 结算平台--ID生成器配置 .env 现在没啥用了 可以删除了 2020-11-20 14:10
 
 ```
 
@@ -23,7 +23,7 @@ RTC_BASE_UUID_APP_KEY='keytest2'
     
 ```
 
-## 计算平台--ID生成器PHP调用 现在没啥用了 可以删除了 2020-11-20 
+## 计算平台--ID生成器PHP调用 现在没啥用了 可以删除了 2020-11-20  14:10
 ```php
 
      use App\Libraries\SettlementPlatformIdGernerator;
