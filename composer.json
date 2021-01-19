@@ -1,5 +1,5 @@
 {
-  "name": "library/common",
+  "name": "zhaotuqi/common",
   "description": "公共类方法-日志重写类",
   "keywords": ["common","mail","log","laravel5"],
   "authors": [
